@@ -25,6 +25,7 @@ private:
     bool isOnline{false};
     bool isValidModel{false};
     bool isConnected{false};
+    bool shutdownIncomplete{false};
     int cableMotorNum{8}; // !!!!! IMPORTANT !!!!! Put in the number of motors for cables before compiling the programme
     int cableMotorBrakeNum{4}; // !!!!! IMPORTANT !!!!! Put in the number of motors for cables before compiling the programme    
     int railMotorNum{4}; // Typical 4 linear rails
@@ -82,26 +83,26 @@ public:
 // Constructor
     Robot();
     Robot(string robotConfigPath);
-    void Connect();
-    void Disconnect();
+    bool Connect();
+    bool Disconnect();
     bool IsConnected();
 
 // Update
     /// @brief Read robot model config from file.
     /// @param filename string. Config file name.
-    void UpdateModelFromFile(string filename, bool reconnect=false);
+    bool UpdateModelFromFile(string filename, bool reconnect=false);
 
     /// @brief Read robot Position from csv/txt file
     /// @param filename string. Position file name
-    void UpdatePosFromFile(string filename, bool calibration=true);
+    bool UpdatePosFromFile(string filename, bool calibration=true);
 
     /// @brief Read robot Position from csv/txt file
     /// @param filename string. Position file name
-    void UpdatePosFromLog(string filename);
+    bool UpdatePosFromLog(string filename);
 
     /// @brief Update end effector pos
     /// @param pos double array, end effector pos
-    void UpdatePos(double pos[6]);
+    bool UpdatePos(double pos[6]);
 
 
 // Verify
@@ -250,7 +251,7 @@ public:
     bool MoveToParaBlend(double dest[], int time, bool showAtten=true);
     bool MoveToParaBlend(double dest[], bool showAtten=true);
     bool MoveToLinear(double dest[], int time, bool showAtten=true, bool useEBrake=true);;
-    void RaiseRailWithCableByLengthAbsulote(int railIndex, int cableIndex, float length);
+    bool RaiseRailWithCableByLengthAbsulote(int railIndex, int cableIndex, float length);
 };
 
 #endif

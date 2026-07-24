@@ -3,48 +3,47 @@
 
 #include "COMPortNode.h"
 #include <string>
-#include <map>
 
 using namespace std;
 class BrakeController{
 private:
     COMPortNode node;
-    bool isOnline;
-    bool useRailBrake;
-    bool useCableBrake;
+    bool isOnline{false};
+    bool useRailBrake{false};
+    bool useCableBrake{false};
     
-    string sendStr = "";
-    bool isConnected;
+    string sendStr{"(0:0)   "};
+    bool isConnected{false};
+    bool cleanupPending{false};
 
-
-    int railBrakeNum;
-    int cableBrakeNum;
-
-    bool* railBrakeFlag;
-    bool* cableBrakeFlag;
+    int railBrakeNum{0};
+    int cableBrakeNum{0};
+    bool IsValidRailBrakeIndex(int index) const;
+    bool IsValidCableBrakeIndex(int index) const;
     
 public:
-    BrakeController(bool isOnline=true);
+    explicit BrakeController(bool isOnline=false);
 
-    void Connect(string portName);
+    bool Connect(const string& portName);
     
-    void Disconnect();
-    bool IsConnected();
+    bool Disconnect();
+    bool IsConnected() const;
+    bool HasActiveResources() const;
     
-    void UseRailBrake(int val);
-    void UseCableBrake(int val);
+    bool UseRailBrake(int val);
+    bool UseCableBrake(int val);
 
-    void OpenRailBrakeByIndex(int index);
-    void CloseRailBrakeByIndex(int index);
+    bool OpenRailBrakeByIndex(int index);
+    bool CloseRailBrakeByIndex(int index);
 
-    void OpenAllRailBrake();
-    void CloseAllRailBrake();
+    bool OpenAllRailBrake();
+    bool CloseAllRailBrake();
         
-    void OpenCableBrakeByIndex(int index);
-    void CloseCableBrakeByIndex(int index);
+    bool OpenCableBrakeByIndex(int index);
+    bool CloseCableBrakeByIndex(int index);
 
-    void OpenAllCableBrake();
-    void CloseAllCableBrake();
+    bool OpenAllCableBrake();
+    bool CloseAllCableBrake();
 
 };
 #endif

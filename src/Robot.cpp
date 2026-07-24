@@ -18,28 +18,46 @@ Robot::Robot(string robotConfigPath)
     this->UpdateModelFromFile(robotConfigPath);
 }
 
-void Robot::Connect()
+bool Robot::Connect()
 {
+    if(this->isConnected
+        || this->shutdownIncomplete
+        || this->gripper.HasActiveResources()
+        || this->brake.HasActiveResources()
+        || this->cable.HasActiveResources()
+        || this->rail.HasActiveResources()){
+        if(!this->Disconnect()){
+            cerr << "Error: Existing robot connection could not be safely closed."
+                 << endl;
+            return false;
+        }
+    }
+    this->shutdownIncomplete = false;
 
     if (this->isOnline)
     {
         if (!this->posLogger.OpenFile("log\\pos.log"))
         {
-            cout << "Cannot open pos logger file. System will now exit." << endl;
-            exit(-1);
+            cout << "Cannot open pos logger file. Connection aborted." << endl;
+            this->isConnected = false;
+            return false;
         }
     }
 
-    this->isConnected = true;
+    this->isConnected = false;
     // Init BLE Nodes
     if (this->useGripper)
     {
         this->gripper = GripperController(this->isOnline, this->useGripper);
-        this->gripper.Connect(this->gripperCommPort);
-        if (!this->gripper.IsConnected())
+        if (!this->gripper.Connect(this->gripperCommPort))
         {
             cout << "Error: Gripper not connected." << endl;
             this->isConnected = false;
+            if(!this->Disconnect()){
+                cerr << "CRITICAL: Gripper connection failed and rollback is incomplete."
+                     << endl;
+            }
+            return false;
         }
     }
 
@@ -47,13 +65,35 @@ void Robot::Connect()
     if (this->useRailBraker || this->useCableBraker)
     {
         this->brake = BrakeController(this->isOnline);
-        this->brake.UseCableBrake(this->cableMotorBrakeNum);
-        this->brake.UseRailBrake(this->railMotorNum);
-        this->brake.Connect(this->railBrakeCommPort);
-        if (!this->brake.IsConnected())
+        if(this->useCableBraker
+            && !this->brake.UseCableBrake(this->cableMotorBrakeNum)){
+            cout << "Error: Invalid cable brake configuration." << endl;
+            this->isConnected = false;
+            if(!this->Disconnect()){
+                cerr << "CRITICAL: Brake configuration failed and rollback is incomplete."
+                     << endl;
+            }
+            return false;
+        }
+        if(this->useRailBraker
+            && !this->brake.UseRailBrake(this->railMotorNum)){
+            cout << "Error: Invalid rail brake configuration." << endl;
+            this->isConnected = false;
+            if(!this->Disconnect()){
+                cerr << "CRITICAL: Brake configuration failed and rollback is incomplete."
+                     << endl;
+            }
+            return false;
+        }
+        if (!this->brake.Connect(this->railBrakeCommPort))
         {
             cout << "Error: Brake not connected." << endl;
             this->isConnected = false;
+            if(!this->Disconnect()){
+                cerr << "CRITICAL: Brake connection failed and rollback is incomplete."
+                     << endl;
+            }
+            return false;
         }
     }
 
@@ -61,15 +101,30 @@ void Robot::Connect()
     if (this->useRailMotor)
     {
         this->rail = RailController(this->isOnline, this->useRailMotor);
-        this->rail.Connect(851, this->railMotorNum);
-        if (!this->rail.IsConnected())
+        if (!this->rail.Connect(851, this->railMotorNum))
         {
             cout << "Error: Rail motors not connected." << endl;
             this->isConnected = false;
+            if(!this->Disconnect()){
+                cerr << "CRITICAL: Rail connection failed and rollback is incomplete."
+                     << endl;
+            }
+            return false;
         }
-        vector<int> railMotorCmd = this->rail.GetMotorPosMeasured();
+        vector<double> railMotorCmd;
+        if(!this->rail.GetMotorPosMeasured(railMotorCmd)
+            || railMotorCmd.size() != static_cast<size_t>(this->railMotorNum)){
+            cerr << "Error: Rail position verification failed during initialization."
+                 << endl;
+            this->isConnected = false;
+            if(!this->Disconnect()){
+                cerr << "CRITICAL: Rail verification failed and rollback is incomplete."
+                     << endl;
+            }
+            return false;
+        }
         for(int i = 0; i < this->railMotorNum; i++){
-            int currentPos = railMotorCmd[i]; // in internal counts
+            double currentPos = railMotorCmd[i]; // in internal counts
             cout << "Rail " << i << " current pos: " << currentPos << endl;
             // this->rail.MoveMotorCmdAbsuloteById(i, currentPos);
             // this->brake.OpenRailBrakeByIndex(i);
@@ -85,36 +140,111 @@ void Robot::Connect()
     if (this->useCableMotor)
     {
         this->cable = CableController(this->isOnline, this->useCableMotor);
-        this->brake.OpenAllCableBrake();
-        this->cable.Connect(this->cableMotorNum);
-        this->brake.CloseAllCableBrake();
-        if (!this->cable.IsConnected())
-        {
-            cout << "Error: Cable motors not connected." << endl;
+        if(!this->brake.OpenAllCableBrake()){
+            cout << "Error: Cable brakes could not be opened." << endl;
             this->isConnected = false;
+            if(!this->Disconnect()){
+                cerr << "CRITICAL: Cable-brake preparation failed and rollback is incomplete."
+                     << endl;
+            }
+            return false;
+        }
+        const bool cableConnected = this->cable.Connect(this->cableMotorNum);
+        if(!cableConnected
+            && this->cable.HasActiveResources()
+            && !this->cable.StopAllMotor()){
+            cerr << "CRITICAL: Cable initialization failed and retained motor "
+                 << "resources could not be stopped. Brakes remain open for "
+                 << "a safe retry." << endl;
+            this->isConnected = false;
+            this->shutdownIncomplete = true;
+            return false;
+        }
+        const bool cableBrakesClosed = this->brake.CloseAllCableBrake();
+        if (!cableConnected || !cableBrakesClosed)
+        {
+            cout << "Error: Cable motor or brake initialization failed." << endl;
+            this->isConnected = false;
+            if(!this->Disconnect()){
+                cerr << "CRITICAL: Cable initialization failed and rollback is incomplete."
+                     << endl;
+            }
+            return false;
         }
     }
+    this->isConnected = true;
+    return this->IsConnected();
 }
 
-void Robot::Disconnect()
+bool Robot::Disconnect()
 {
-    if (this->gripper.IsConnected())
-        this->gripper.Disconnect();
-    if (this->brake.IsConnected()){
-        this->brake.CloseAllRailBrake();
-        this->brake.CloseAllCableBrake();
-    if (this->cable.IsConnected())
-        this->cable.Disconnect();
-    if (this->rail.IsConnected())
-        this->rail.Disconnect();
+    bool gripperDisconnected = true;
+    if (this->gripper.HasActiveResources())
+        gripperDisconnected = this->gripper.Disconnect();
+
+    if(this->cable.HasActiveResources()){
+        if(!this->cable.StopAllMotor()){
+            cerr << "CRITICAL: Cable stop command failed during shutdown. "
+                 << "Brakes and controller connections are being retained for "
+                 << "a safe retry." << endl;
+            this->isConnected = false;
+            this->shutdownIncomplete = true;
+            return false;
+        }
     }
+
+    bool brakesSecured = true;
+    if (this->brake.IsConnected()){
+        const bool railBrakesClosed = this->brake.CloseAllRailBrake();
+        const bool cableBrakesClosed = this->brake.CloseAllCableBrake();
+        brakesSecured = railBrakesClosed && cableBrakesClosed;
+    }
+    if(!brakesSecured){
+        cerr << "CRITICAL: One or more brakes could not be closed. "
+             << "Motor connections are being retained for a safe retry." << endl;
+        this->isConnected = false;
+        this->shutdownIncomplete = true;
+        return false;
+    }
+
+    bool cableDisconnected = true;
+    if (this->cable.HasActiveResources())
+        cableDisconnected = this->cable.Disconnect();
+
+    bool railDisconnected = true;
+    if (this->rail.HasActiveResources())
+        railDisconnected = this->rail.Disconnect();
+
+    bool brakeDisconnected = true;
+    if (this->brake.HasActiveResources() && cableDisconnected && railDisconnected)
+        brakeDisconnected = this->brake.Disconnect();
+
+    this->shutdownIncomplete = !gripperDisconnected
+        || !brakeDisconnected
+        || this->gripper.HasActiveResources()
+        || this->brake.HasActiveResources()
+        || this->cable.HasActiveResources()
+        || this->rail.HasActiveResources();
     this->isConnected = false;
 
-    if (this->isOnline)
+    if (!this->shutdownIncomplete && this->isOnline)
         this->posLogger.CloseFile();
+    if(this->shutdownIncomplete){
+        cerr << "CRITICAL: Robot shutdown is incomplete; one or more "
+             << "controller connections remain active." << endl;
+    }
+    return !this->shutdownIncomplete;
 }
 
-bool Robot::IsConnected() { return this->isConnected; }
+bool Robot::IsConnected() {
+    if(!this->isConnected || this->shutdownIncomplete) return false;
+    if(this->useGripper && !this->gripper.IsConnected()) return false;
+    if((this->useRailBraker || this->useCableBraker)
+        && !this->brake.IsConnected()) return false;
+    if(this->useCableMotor && !this->cable.IsConnected()) return false;
+    if(this->useRailMotor && !this->rail.IsConnected()) return false;
+    return true;
+}
 
 bool Robot::IsValid() { return this->isValidModel; }
 
@@ -184,10 +314,25 @@ void Robot::PrintHomePos()
     cout << endl;
 }
 
-void Robot::UpdateModelFromFile(string filename, bool reconnect)
+bool Robot::UpdateModelFromFile(string filename, bool reconnect)
 { // Read model.json file
-    if (reconnect)
-        this->Disconnect();
+    const bool hasActiveControllers = this->isConnected
+        || this->shutdownIncomplete
+        || this->gripper.HasActiveResources()
+        || this->brake.HasActiveResources()
+        || this->cable.HasActiveResources()
+        || this->rail.HasActiveResources();
+    if(reconnect){
+        if(!this->Disconnect()){
+            cerr << "Error: Cannot reload configuration while shutdown is incomplete."
+                 << endl;
+            return false;
+        }
+    }else if(hasActiveControllers){
+        cerr << "Error: Refusing to change configuration while controllers are active. "
+             << "Use reconnect mode." << endl;
+        return false;
+    }
     json model;
     try
     {
@@ -195,7 +340,7 @@ void Robot::UpdateModelFromFile(string filename, bool reconnect)
         if (!file.good())
         {
             cout << "Error: File Not Exist. Keep using current config." << endl;
-            return;
+            return false;
         }
         file >> model;
         cout << "Importing " << filename << ": " << model.value("ModelName", "NOT FOUND") << endl;
@@ -203,8 +348,16 @@ void Robot::UpdateModelFromFile(string filename, bool reconnect)
         this->isOnline = model.value("isOnline", false);
 
         // Initialize parameters
-        this->cableMotorNum = model.value("cableMotorNum", 8); // Default value set in 2nd input
-        this->railMotorNum = model.value("railMotorNum", 4);
+        const int configuredCableMotorNum = model.value("cableMotorNum", 8);
+        const int configuredRailMotorNum = model.value("railMotorNum", 4);
+        if(configuredCableMotorNum < 1 || configuredCableMotorNum > 8){
+            throw runtime_error("cableMotorNum must be between 1 and 8");
+        }
+        if(configuredRailMotorNum < 1 || configuredRailMotorNum > 4){
+            throw runtime_error("railMotorNum must be between 1 and 4");
+        }
+        this->cableMotorNum = configuredCableMotorNum;
+        this->railMotorNum = configuredRailMotorNum;
         this->railMotorCableMotorOffset = model.value("railMotorCableMotorOffset", 2);
         this->absTrqLmt = model.value("absTrqLmt", 10);
         this->endEffToGroundOffset = model.value("endEffToGroundOffset", -0.28);
@@ -268,9 +421,13 @@ void Robot::UpdateModelFromFile(string filename, bool reconnect)
         }
         if (!this->isOnline)
             cout << "!!!!!Warning!!!!!Offline Mode. Modify the config file if you want go online" << endl;
-        if (reconnect)
-            this->Connect();
         this->isValidModel = true;
+        if (reconnect && !this->Connect()){
+            cerr << "Error: Configuration was loaded, but robot reconnection failed."
+                 << endl;
+            return false;
+        }
+        return true;
     }
     catch (const exception &e)
     {
@@ -278,10 +435,16 @@ void Robot::UpdateModelFromFile(string filename, bool reconnect)
         cout << e.what() << endl;
         cout << "Error: Cannot read robot config file. Exit..." << endl;
         this->isValidModel = false;
+        return false;
     }
 }
 
-void Robot::UpdatePos(double pos[6]){
+bool Robot::UpdatePos(double pos[6]){
+    if(this->isOnline && !this->IsConnected()){
+        cerr << "Position calibration rejected: robot is not fully connected."
+             << endl;
+        return false;
+    }
     for(int i = 0; i < 6; i++){
         this->endEffectorPos[i] = pos[i];
     }
@@ -292,7 +455,17 @@ void Robot::UpdatePos(double pos[6]){
         // cable motors
         cout << "Calibrating Cable Motor" << endl;
         for(int index = 0; index < this->cableMotorNum; index++){
-            this->cable.CalibrationMotor(index, this->CableMotorLengthToCmd(index, cableLengthList[index]));
+            if(!this->cable.CalibrationMotor(
+                index,
+                this->CableMotorLengthToCmd(index, cableLengthList[index])
+            )){
+                cerr << "Cable calibration failed at motor " << index
+                     << "; remaining calibration writes were not issued."
+                     << endl;
+                this->isConnected = false;
+                this->shutdownIncomplete = true;
+                return false;
+            }
         }
     }
     this->PrintEEPos();
@@ -304,14 +477,22 @@ void Robot::UpdatePos(double pos[6]){
         }
 
     }
+    return true;
 }
 
-void Robot::UpdatePosFromFile(string filename, bool calibration){
+bool Robot::UpdatePosFromFile(string filename, bool calibration){
+    if(this->isOnline
+        && calibration
+        && !this->IsConnected()){
+        cerr << "Position-file calibration rejected: robot is not fully connected."
+             << endl;
+        return false;
+    }
     try{
         ifstream file (filename); //"lastPos.txt" or "currentPos.csv"
         if(!file.good()){
             cout << "Error: File Not Exist. Keep using current pos." << endl;
-            return;
+            return false;
         }
         string temp;
         int count = 0;
@@ -350,12 +531,30 @@ void Robot::UpdatePosFromFile(string filename, bool calibration){
                 cout << "Calibrating Cable Motor" << endl;
                 for (int index = 0; index < this->cableMotorNum; index++)
                 {
-                    this->cable.CalibrationMotor(index, this->CableMotorLengthToCmd(index, cableLengthList[index]));
+                    if(!this->cable.CalibrationMotor(
+                        index,
+                        this->CableMotorLengthToCmd(index, cableLengthList[index])
+                    )){
+                        cerr << "Cable calibration from position file failed at "
+                             << "motor " << index << "." << endl;
+                        this->isConnected = false;
+                        this->shutdownIncomplete = true;
+                        return false;
+                    }
                 }
                 // slider motors
                 cout << "Calibrating Rail Motor" << endl;
                 for(int index = 0; index < this->railMotorNum; index++){
-                    this->rail.CalibrationMotor(index, this->RailMotorLengthToCmd(index, railOffset[index]));
+                    if(!this->rail.CalibrationMotor(
+                        index,
+                        this->RailMotorLengthToCmd(index, railOffset[index])
+                    )){
+                        cerr << "Rail calibration from position file failed at "
+                             << "motor " << index << "." << endl;
+                        this->isConnected = false;
+                        this->shutdownIncomplete = true;
+                        return false;
+                    }
                 }
                 cout << "Updating motor counts completed" << endl;
             }
@@ -373,33 +572,51 @@ void Robot::UpdatePosFromFile(string filename, bool calibration){
             if (this->useRailMotor)
             {
                 cout << "Rail Motor length / internal counts: " << endl;
-                vector<int> railMotorCmd = this->rail.GetMotorPosMeasured();
+                vector<double> railMotorCmd;
+                if(!this->rail.GetMotorPosMeasured(railMotorCmd)){
+                    cerr << "Failed to verify rail positions after calibration."
+                         << endl;
+                    this->isConnected = false;
+                    this->shutdownIncomplete = true;
+                    return false;
+                }
                 for (int i = 0; i < this->railMotorNum; i++)
                 {
-                    cout << "\t" << "Rail " << i << ": " << this->railOffset[i] << " / " << railMotorCmd[i] << "    " << endl;
+                    const double measuredPosition =
+                        static_cast<size_t>(i) < railMotorCmd.size() ? railMotorCmd[i] : 0.0;
+                    cout << "\t" << "Rail " << i << ": " << this->railOffset[i]
+                         << " / " << measuredPosition << "    " << endl;
                 }
             }
 
             if (this->isOnline)
                 this->posLogger.LogPos(this->endEffectorPos, this->railOffset);
+            return true;
         }
+        return false;
     }
     catch (const exception &e)
     {
         cout << "Error in reading " << filename << endl;
         cout << e.what() << endl;
+        return false;
     }
 }
 
-void Robot::UpdatePosFromLog(string filename)
+bool Robot::UpdatePosFromLog(string filename)
 {
+    if(this->isOnline && !this->IsConnected()){
+        cerr << "Position-log calibration rejected: robot is not fully connected."
+             << endl;
+        return false;
+    }
     try
     {
         ifstream file(filename); //"lastPos.txt" or "currentPos.csv"
         if (!file.good())
         {
             cout << "Error: File Not Exist. Keep using current pos." << endl;
-            return;
+            return false;
         }
         string temp;
         int count = 0;
@@ -437,13 +654,31 @@ void Robot::UpdatePosFromLog(string filename)
                 cout << "Calibrating Cable Motor" << endl;
                 for (int index = 0; index < this->cableMotorNum; index++)
                 {
-                    this->cable.CalibrationMotor(index, this->CableMotorLengthToCmd(index, cableLengthList[index]));
+                    if(!this->cable.CalibrationMotor(
+                        index,
+                        this->CableMotorLengthToCmd(index, cableLengthList[index])
+                    )){
+                        cerr << "Cable calibration from position log failed at "
+                             << "motor " << index << "." << endl;
+                        this->isConnected = false;
+                        this->shutdownIncomplete = true;
+                        return false;
+                    }
                 }
                 // slider motors
                 cout << "Calibrating Rail Motor" << endl;
                 for (int index = 0; index < this->railMotorNum; index++)
                 {
-                    this->rail.CalibrationMotor(index, this->RailMotorLengthToCmd(index, railOffset[index]));
+                    if(!this->rail.CalibrationMotor(
+                        index,
+                        this->RailMotorLengthToCmd(index, railOffset[index])
+                    )){
+                        cerr << "Rail calibration from position log failed at "
+                             << "motor " << index << "." << endl;
+                        this->isConnected = false;
+                        this->shutdownIncomplete = true;
+                        return false;
+                    }
                 }
                 cout << "Updating motor counts completed" << endl;
             }
@@ -456,20 +691,34 @@ void Robot::UpdatePosFromLog(string filename)
             }
             // for twincat motors
             cout << "Rail Motor length / internal counts: " << endl;
-            vector<int> railMotorCmd = this->rail.GetMotorPosMeasured();
+            vector<double> railMotorCmd;
+            if(this->useRailMotor
+                && !this->rail.GetMotorPosMeasured(railMotorCmd)){
+                cerr << "Failed to verify rail positions after log recovery."
+                     << endl;
+                this->isConnected = false;
+                this->shutdownIncomplete = true;
+                return false;
+            }
             for (int i = 0; i < this->railMotorNum; i++)
             {
-                cout << "\t" << "Rail " << i << ": " << this->railOffset[i] << " / " << railMotorCmd[i] << "    " << endl;
+                const double measuredPosition =
+                    static_cast<size_t>(i) < railMotorCmd.size() ? railMotorCmd[i] : 0.0;
+                cout << "\t" << "Rail " << i << ": " << this->railOffset[i]
+                     << " / " << measuredPosition << "    " << endl;
             }
 
             if (this->isOnline)
                 this->posLogger.LogPos(this->endEffectorPos, this->railOffset);
+            return true;
         }
+        return false;
     }
     catch (const exception &e)
     {
         cout << "Error in reading " << filename << endl;
         cout << e.what() << endl;
+        return false;
     }
 }
 
@@ -737,15 +986,37 @@ bool Robot::eBrake(bool cableBrake, bool railBrake)
         return true;
     if (kbhit())
     { // Emergency quit during trajectory control
-        this->cable.StopAllMotor();
+        const bool cableStopped = this->cable.StopAllMotor();
+        if(!cableStopped){
+            cerr << "CRITICAL: Emergency stop could not verify cable motor stop. "
+                 << "Brakes were not changed; controller state is retained for "
+                 << "a safe retry." << endl;
+            this->isConnected = false;
+            this->shutdownIncomplete = true;
+            return false;
+        }
+        bool shutdownCommandsSucceeded = true;
         if (cableBrake)
-            this->brake.CloseAllCableBrake();
+            shutdownCommandsSucceeded =
+                this->brake.CloseAllCableBrake() && shutdownCommandsSucceeded;
         if (railBrake)
-            this->brake.CloseAllRailBrake();
+            shutdownCommandsSucceeded =
+                this->brake.CloseAllRailBrake() && shutdownCommandsSucceeded;
+        if(!shutdownCommandsSucceeded){
+            cerr << "CRITICAL: Emergency stop could not verify all stop/brake "
+                 << "commands." << endl;
+            this->isConnected = false;
+            this->shutdownIncomplete = true;
+        }
         string userInput;
         cout << endl;
         cout << "================================== Trajectory Stopped!! ==================================" << endl;
         system("pause");
+        // An emergency stop ends the operational session. Active controller
+        // resources remain tracked so the main loop can perform verified
+        // shutdown instead of resuming motion.
+        this->isConnected = false;
+        this->shutdownIncomplete = true;
         return false;
     }
     return true;
@@ -763,8 +1034,40 @@ vector<vector<int32_t>> Robot::PoseTrajToCmdTraj(vector<vector<double>> posTraj)
 
 bool Robot::RunCableTraj(vector<vector<double>> posTraj, bool showAtten)
 {
+    if(!this->IsConnected()){
+        cerr << "Trajectory rejected: robot is not fully connected." << endl;
+        return false;
+    }
+    if(posTraj.empty()){
+        cerr << "Trajectory rejected: no position frames were provided." << endl;
+        return false;
+    }
+    for(size_t frameIndex = 0; frameIndex < posTraj.size(); frameIndex++){
+        if(posTraj[frameIndex].size() < 6){
+            cerr << "Trajectory rejected: position frame " << frameIndex
+                 << " has fewer than six pose values." << endl;
+            return false;
+        }
+    }
+
     vector<vector<int32_t>> cmdTraj = this->PoseTrajToCmdTraj(posTraj);
-    int index = 0;
+    const size_t cableCount = static_cast<size_t>(this->cableMotorNum);
+    if(cmdTraj.size() != posTraj.size()){
+        cerr << "Trajectory rejected: command frame generation was incomplete."
+             << endl;
+        return false;
+    }
+    for(size_t frameIndex = 0; frameIndex < cmdTraj.size(); frameIndex++){
+        if(cmdTraj[frameIndex].size() < cableCount){
+            cerr << "Trajectory rejected: command frame " << frameIndex
+                 << " has fewer values than the configured cable count."
+                 << endl;
+            return false;
+        }
+        cmdTraj[frameIndex].resize(cableCount);
+    }
+
+    size_t index = 0;
     if (showAtten)
     {
         for (int i = 0; i < 18; i++)
@@ -773,20 +1076,30 @@ bool Robot::RunCableTraj(vector<vector<double>> posTraj, bool showAtten)
         }
     }
     // check every step to make sure the command is not too large
-    vector<int32_t> lastFrameCmd = {0, 0, 0, 0, 0, 0, 0, 0};
+    vector<int32_t> lastFrameCmd(cableCount, 0);
     vector<double> lastFrameLength = this->EEPoseToCableLength(this->endEffectorPos);
-
-    for (int i = 0; i < 8; i++)
+    if(lastFrameLength.size() < cableCount){
+        cerr << "Trajectory rejected: current cable-length calculation is "
+             << "smaller than the configured cable count." << endl;
+        return false;
+    }
+    for (size_t i = 0; i < cableCount; i++)
     {
         lastFrameCmd[i] = lastFrameLength[i] * this->cableMotorScaleIndividual[i];
     }
-    cout << "Last Frame Length: " << lastFrameLength[0] << " " << lastFrameLength[1] << " " << lastFrameLength[2] << " " << lastFrameLength[3] << " " << lastFrameLength[4] << " " << lastFrameLength[5] << " " << lastFrameLength[6] << " " << lastFrameLength[7] << endl;
-    cout << "Last Frame Cmd: " << lastFrameCmd[0] << " " << lastFrameCmd[1] << " " << lastFrameCmd[2] << " " << lastFrameCmd[3] << " " << lastFrameCmd[4] << " " << lastFrameCmd[5] << " " << lastFrameCmd[6] << " " << lastFrameCmd[7] << endl;
+    cout << "Last Frame Length:";
+    for(size_t i = 0; i < cableCount; i++)
+        cout << " " << lastFrameLength[i];
+    cout << endl;
+    cout << "Last Frame Cmd:";
+    for(size_t i = 0; i < cableCount; i++)
+        cout << " " << lastFrameCmd[i];
+    cout << endl;
     vector<double> lastFrameEEPos = {this->endEffectorPos[0], this->endEffectorPos[1], this->endEffectorPos[2]};
-    for (int j = 0; j < posTraj.size(); j++)
+    for (size_t j = 0; j < posTraj.size(); j++)
     {
         vector<int32_t> frame = cmdTraj[j];
-        for (int i = 0; i < 8; i++)
+        for (size_t i = 0; i < cableCount; i++)
         {
             if ((frame[i] - lastFrameCmd[i]) / this->cableMotorScaleIndividual[i] > 0.5 || (frame[i] - lastFrameCmd[i]) / this->cableMotorScaleIndividual[i] < -0.5)
             {
@@ -816,6 +1129,11 @@ bool Robot::RunCableTraj(vector<vector<double>> posTraj, bool showAtten)
         if (!this->cable.MoveAllMotorCmd(frame))
         {
             cout << "Trajectory stopped" << endl;
+            // At least one command write may have reached its motor. Even if
+            // the controller subsequently verifies a stop, the software pose
+            // can no longer be treated as authoritative.
+            this->isConnected = false;
+            this->shutdownIncomplete = true;
             return false;
         }
         for (int i = 0; i < 6; i++)
@@ -872,25 +1190,87 @@ bool Robot::MoveToParaBlend(double dest[], bool showAtten)
 }
 
 
-void Robot::RaiseRailWithCableByLengthAbsulote(int railIndex, int cableIndex, float target)
+bool Robot::RaiseRailWithCableByLengthAbsulote(int railIndex, int cableIndex, float target)
 {
+    if(!this->IsConnected()){
+        cerr << "Coordinated rail move rejected: robot is not fully connected."
+             << endl;
+        return false;
+    }
+    const auto markUnsafeShutdownState = [this](){
+        this->isConnected = false;
+        this->shutdownIncomplete = true;
+    };
+    if(railIndex < 0 || railIndex >= this->railMotorNum
+        || cableIndex < 0 || cableIndex >= this->cableMotorNum){
+        cerr << "Invalid rail/cable index for coordinated move." << endl;
+        return false;
+    }
+    if(!std::isfinite(target)){
+        cerr << "Rail target must be finite." << endl;
+        return false;
+    }
     if (target < 0 || target > 2.55)
     {
         cout << "WARNING! Intended rail count is out of bound! " << target << endl;
         cout << "Valid range: " << 0 << " ~ " << 2.55 << endl;
         if(!CheckContinue()){
-                return;
+                return false;
         }
     }
-    this->brake.OpenCableBrakeByIndex(cableIndex);
-    this->brake.OpenRailBrakeByIndex(railIndex);
+
+    const bool cableBrakeOpened =
+        this->brake.OpenCableBrakeByIndex(cableIndex);
+    const bool railBrakeOpened =
+        this->brake.OpenRailBrakeByIndex(railIndex);
+    if(!cableBrakeOpened || !railBrakeOpened){
+        cerr << "Coordinated move aborted because a brake could not be opened."
+             << endl;
+        bool rollbackSucceeded = true;
+        if(cableBrakeOpened)
+            rollbackSucceeded =
+                this->brake.CloseCableBrakeByIndex(cableIndex)
+                && rollbackSucceeded;
+        if(railBrakeOpened)
+            rollbackSucceeded =
+                this->brake.CloseRailBrakeByIndex(railIndex)
+                && rollbackSucceeded;
+        // A failed write is indeterminate: the brake may have moved even
+        // though the command was not acknowledged. End the operational
+        // session regardless of whether compensating closes were acknowledged.
+        if(!rollbackSucceeded)
+            cerr << "CRITICAL: Brake-open rollback could not be verified."
+                 << endl;
+        markUnsafeShutdownState();
+        return false;
+    }
+
+    const auto secureBrakes = [this, railIndex, cableIndex](){
+        const bool cableClosed =
+            this->brake.CloseCableBrakeByIndex(cableIndex);
+        const bool railClosed =
+            this->brake.CloseRailBrakeByIndex(railIndex);
+        if(!cableClosed || !railClosed){
+            cerr << "CRITICAL: Coordinated move ended with an unsecured brake."
+                 << endl;
+            this->isConnected = false;
+            this->shutdownIncomplete = true;
+        }
+        return cableClosed && railClosed;
+    };
 
     double dura = abs(target - this->railOffset[railIndex]) / this->railVelLmt * 1000; // *1000 to change unit to ms
+    if(!std::isfinite(dura) || dura <= 0){
+        cerr << "Invalid coordinated move duration." << endl;
+        secureBrakes();
+        return false;
+    }
     if (dura <= 200 || dura > 10000)
     {
         cout << "Invalid duration: " << dura << " ms" << endl;
         if(!CheckContinue()){
-            return;
+            secureBrakes();
+            return false;
         }
     } // Don't run traj for incorrect timing
 
@@ -927,16 +1307,36 @@ void Robot::RaiseRailWithCableByLengthAbsulote(int railIndex, int cableIndex, fl
     for (int i = 0; i < cableTraj.size(); i++)
     {
         if (!this->eBrake(true, true))
-            return;
+        {
+            return false;
+        }
         auto start = chrono::steady_clock::now();
-        rail.SelectWorkingMotor(railIndex);
-        rail.MoveSelectedMotorCmdAbsulote(railTraj[i]);
+        if(!rail.MoveMotorCmdAbsuloteById(railIndex, railTraj[i])){
+            cerr << "Move rail " << railIndex << " failed!" << endl;
+            if(!this->cable.StopAllMotor()){
+                markUnsafeShutdownState();
+                return false;
+            }
+            secureBrakes();
+            // A rejected acknowledgement cannot prove whether the rail moved.
+            // End the session instead of continuing from an uncertain pose.
+            markUnsafeShutdownState();
+            return false;
+        }
         cout << "Frame " << i << " Rail " << railIndex << " Cmd: " << railTraj[i] << "(" << this->RailMotorCmdToLength(railIndex, railTraj[i]) << "m)" 
                               << " Cable " << cableIndex << " Cmd: " << cableTraj[i] << "(" << this->CableMotorCmdToLength(cableIndex, cableTraj[i]) << "m)" << endl;
         if (!cable.MoveSingleMotorCmd(cableIndex, cableTraj[i], true))
         {
             cout << "Move cable " << cableIndex << " failed!";
-            break;
+            if(!this->cable.StopAllMotor()){
+                markUnsafeShutdownState();
+                return false;
+            }
+            secureBrakes();
+            // The rail command for this frame may already have executed while
+            // the cable write failed, so the coordinated pose is indeterminate.
+            markUnsafeShutdownState();
+            return false;
         }
         this->railOffset[railIndex] = this->RailMotorCmdToLength(railIndex, railTraj[i]);
         if (this->isOnline)
@@ -958,8 +1358,7 @@ void Robot::RaiseRailWithCableByLengthAbsulote(int railIndex, int cableIndex, fl
     Sleep(50);
     cout << "Rail traj done .... \n";
 
-    this->brake.CloseCableBrakeByIndex(cableIndex);
-    this->brake.CloseRailBrakeByIndex(railIndex);
+    return secureBrakes();
 }
 
 void Robot::SavePosToFile(string filename)
@@ -988,10 +1387,10 @@ void Robot::SavePosToFile(string filename)
     {
         myfile << this->cable.GetMotorPosMeasured(i) << " ";
     }
-    vector<int> railMotorCmd = this->rail.GetMotorPosMeasured();
+    vector<double> railMotorCmd = this->rail.GetMotorPosMeasured();
     for (int i = 0; i < this->railMotorNum; i++)
     {
-        if (this->useRailMotor)
+        if (this->useRailMotor && static_cast<size_t>(i) < railMotorCmd.size())
         {
             myfile << railMotorCmd[i] << " ";
         }

@@ -8,21 +8,23 @@ using namespace std;
 using namespace sFnd;
 class TeknicNode{
 private:
-    bool isOnline;
-    int nodeNumber;
-    int portCount;
+    bool isOnline{false};
+    bool isConnected{false};
+    bool portsOpen{false};
+    int nodeNumber{0};
+    int portCount{0};
     vector<string> comHubPorts;
     vector<INode*> nodeList; // create a list for each node
-    SysManager* myMgr;
-    /// @brief Scan the network, find all connected teknic motors.
-    /// @return bool. true if there are exact number of teknic motors connected.
-    bool CheckMotorNetwork();
+    SysManager* myMgr{nullptr};
+    bool IsValidNodeIndex(int nodeIndex) const;
+    bool CleanupConnection();
 public:
-    TeknicNode(bool isOnline=false);
+    explicit TeknicNode(bool isOnline=false);
     /// @brief Scan the network, find all connected sc hub and all connected teknic motors.
     /// @return bool. Whether the connection has been established.
     bool Connect(int nodeNumber);
-    void Disconnect(); 
+    bool Disconnect();
+    bool IsConnected() const;
     
     INode* GetNode(int nodeIndex);
     vector<INode*> GetNodeList();
@@ -30,7 +32,7 @@ public:
     float GetTrqMeasured(int index);
     void SetVel(int index, int val);
     void StopNode(int index);
-    void StopAll();
+    bool StopAll();
     void ClearAlert();
     void MoveToPosn(int index, int32_t cmd, bool absolute);
     bool NodeIsInAlert(int index);

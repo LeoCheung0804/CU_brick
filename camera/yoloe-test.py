@@ -35,8 +35,8 @@ if __name__ == "__main__":
     saved = None
 
     try: 
-        model = YOLO('yoloe-11l-seg.engine')
-        # model = YOLO('yoloe-11s-seg_openvino_model/')
+        #model = YOLO('yoloe-11l-seg.engine')
+        model = YOLO('yoloe-11s-seg_openvino_model/')
     except Exception as e:
         print(f"Error loading model: {e}, trying to export from YOLOE model.")
         model = YOLO('yoloe-11s-seg.pt')

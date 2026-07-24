@@ -56,8 +56,7 @@ public:
         
         // Init Rail Motor Nodes
         this->rail = RailController(false, true);
-        this->rail.Connect(851, 1);
-        if(!this->rail.IsConnected()){
+        if(!this->rail.Connect(851, 1) || !this->rail.IsConnected()){
             std::cout << "Error: Rail motors not connected." << std::endl;
             std::cout << "Exiting ..." << std::endl;
             exit(-1);
@@ -102,8 +101,10 @@ private:
             switch(command) {
                 case 0: {  // Add braces to create a new scope
                     double position = j["position"];
-                    this->rail.SelectWorkingMotor(index);
-                    this->rail.MoveSelectedMotorCmd(position);
+                    if(!this->rail.MoveMotorCmdAbsuloteById(index, position)){
+                        std::cerr << "Rail command rejected for index " << index
+                                  << std::endl;
+                    }
                     break;
                 }
                 default:

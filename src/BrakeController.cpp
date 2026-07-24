@@ -1,142 +1,233 @@
 #include "../include/BrakeController.h"
 #include <iostream>
-#include <assert.h>
 #define RAIL_BRAKE_INDEX_START 0
 #define CABLE_BRAKE_INDEX_START 4
 #define RAIL_BRAKE_ALL 8
 #define CABLE_BRAKE_ALL 9
-BrakeController::BrakeController(bool isOnline){
-    this->node = COMPortNode(isOnline);
-    this->useCableBrake = false;
-    this->useRailBrake = false;
+BrakeController::BrakeController(bool isOnline)
+    : node(isOnline), isOnline(isOnline) {}
+
+bool BrakeController::IsValidRailBrakeIndex(int index) const {
+    return index >= 0 && index < this->railBrakeNum;
 }
 
-void BrakeController::Connect(string portName){
-    if(!this->useRailBrake) return;
-    this->sendStr = "(0:0)   ";
+bool BrakeController::IsValidCableBrakeIndex(int index) const {
+    return index >= 0 && index < this->cableBrakeNum;
+}
+
+bool BrakeController::Connect(const string& portName){
+    if(this->HasActiveResources()){
+        if(!this->Disconnect()){
+            cout << "Error: Existing brake connection could not be closed.\n";
+            return false;
+        }
+    }
+    this->isConnected = false;
+    this->cleanupPending = false;
+    if(!this->useRailBrake && !this->useCableBrake) return true;
     if(!this->node.Connect(portName)) { 
         cout << "Error: Failed to connect Brake. \n"; 
-        this->isConnected = false;
+        this->cleanupPending = this->node.HasActiveResources();
+        return false;
     }
-    Sleep(2000);
+    if(this->isOnline) Sleep(2000);
     cout << "Brake Controller Online." << endl;
     this->isConnected = true;
+    this->cleanupPending = false;
+    return true;
 }
 
-void BrakeController::Disconnect(){
-    if(!this->useRailBrake) return;
-    this->node.Disconnect();
+bool BrakeController::Disconnect(){
+    if(!this->HasActiveResources()) return true;
+    if(!this->node.Disconnect()){
+        cerr << "Failed to disconnect brake controller; connection remains active."
+             << endl;
+        this->isConnected = false;
+        this->cleanupPending = this->node.HasActiveResources();
+        return false;
+    }
     cout << "Brake Controller Offline." << endl;
     this->isConnected = false;
+    this->cleanupPending = false;
+    return true;
 }
 
-void BrakeController::UseCableBrake(int num){ 
-    this->useCableBrake = true; 
+bool BrakeController::UseCableBrake(int num){
+    if(num < 0 || num > 4){
+        cerr << "Cable brake count must be between 0 and 4." << endl;
+        this->cableBrakeNum = 0;
+        this->useCableBrake = false;
+        return false;
+    }
     this->cableBrakeNum = num;
-    this->cableBrakeFlag = new bool(num);
+    this->useCableBrake = this->cableBrakeNum > 0;
+    return true;
 }
 
-void BrakeController::UseRailBrake(int num){ 
-    this->useRailBrake = true; 
+bool BrakeController::UseRailBrake(int num){
+    if(num < 0 || num > 4){
+        cerr << "Rail brake count must be between 0 and 4." << endl;
+        this->railBrakeNum = 0;
+        this->useRailBrake = false;
+        return false;
+    }
     this->railBrakeNum = num;
-    this->railBrakeFlag = new bool(num);
+    this->useRailBrake = this->railBrakeNum > 0;
+    return true;
 }
 
-bool BrakeController::IsConnected(){ return this->isConnected; }
+bool BrakeController::IsConnected() const { return this->isConnected; }
 
-void BrakeController::OpenRailBrakeByIndex(int index){
-    if(!this->useRailBrake) return;
-    assert(index >= 0 && index <= this->railBrakeNum);
+bool BrakeController::HasActiveResources() const {
+    return this->isConnected || this->cleanupPending;
+}
+
+bool BrakeController::OpenRailBrakeByIndex(int index){
+    if(!this->useRailBrake) return true;
+    if(!this->isConnected) return false;
+    if(!this->IsValidRailBrakeIndex(index)){
+        cerr << "Invalid rail brake index: " << index << endl;
+        return false;
+    }
     this->sendStr[3] = '0';
     this->sendStr[1] = '0' + RAIL_BRAKE_INDEX_START + index;
     // cout << "Sending Command: " << this->sendStr << " to Brakes" << endl;
-    this->node.Send(this->sendStr);
-    this->railBrakeFlag[index] = false;
-    Sleep(100);
+    if(!this->node.Send(this->sendStr)){
+        cerr << "Failed to open rail brake " << index << "." << endl;
+        return false;
+    }
+    if(this->isOnline) Sleep(100);
     cout << "Rail Brake " << index << " Opened." << endl;
-    
+    return true;
 }
 
-void BrakeController::CloseRailBrakeByIndex(int index){
-    if(!this->useRailBrake) return;
-    assert(index >= 0 && index <= this->railBrakeNum);
+bool BrakeController::CloseRailBrakeByIndex(int index){
+    if(!this->useRailBrake) return true;
+    if(!this->isConnected) return false;
+    if(!this->IsValidRailBrakeIndex(index)){
+        cerr << "Invalid rail brake index: " << index << endl;
+        return false;
+    }
     this->sendStr[3] = '1';
     this->sendStr[1] = '0' + RAIL_BRAKE_INDEX_START + index;
     // cout << "Sending Command: " << this->sendStr << " to Brakes" << endl;
-    this->node.Send(this->sendStr);
-    this->railBrakeFlag[index] = true;
-    Sleep(100);
-    cout << "Rail Brake " << index << " Closed." << endl;
-    
-}
-
-void BrakeController::OpenAllRailBrake(){
-    if(!this->useRailBrake) return;
-    for(int i = 0; i < this->railBrakeNum; i++){
-        this->OpenRailBrakeByIndex(i);
+    if(!this->node.Send(this->sendStr)){
+        cerr << "Failed to close rail brake " << index << "." << endl;
+        return false;
     }
-    Sleep(1000);
-    cout << "ALL Rail Brake Opened." << endl;
-    
+    if(this->isOnline) Sleep(100);
+    cout << "Rail Brake " << index << " Closed." << endl;
+    return true;
 }
 
-void BrakeController::CloseAllRailBrake(){
-    if(!this->useRailBrake) return;
+bool BrakeController::OpenAllRailBrake(){
+    if(!this->useRailBrake) return true;
+    if(!this->isConnected) return false;
+    bool success = true;
+    for(int i = 0; i < this->railBrakeNum; i++){
+        if(!this->OpenRailBrakeByIndex(i)){
+            success = false;
+        }
+    }
+    if(this->isOnline) Sleep(1000);
+    if(success){
+        cout << "ALL Rail Brake Opened." << endl;
+    }else{
+        cerr << "Failed to open one or more rail brakes." << endl;
+        if(!this->CloseAllRailBrake()){
+            cerr << "CRITICAL: Failed to re-close rail brakes after a partial open."
+                 << endl;
+        }
+    }
+    return success;
+}
+
+bool BrakeController::CloseAllRailBrake(){
+    if(!this->useRailBrake) return true;
+    if(!this->isConnected) return false;
     this->sendStr[3] = '1';
     this->sendStr[1] = '0' + RAIL_BRAKE_ALL;
     // cout << "Sending Command: " << this->sendStr << " to Brakes" << endl;
-    this->node.Send(this->sendStr);
-        
-    for(int i = 0; i < this->railBrakeNum; i++){
-        this->railBrakeFlag[i] = true;
+    if(!this->node.Send(this->sendStr)){
+        cerr << "Failed to close all rail brakes." << endl;
+        return false;
     }
-    Sleep(100);
+    if(this->isOnline) Sleep(100);
     cout << "ALL Rail Brake Closed." << endl;
-    
+    return true;
 }
 
-void BrakeController::OpenCableBrakeByIndex(int index){
-    if(!this->useCableBrake) return;
-    assert(index >= 0 && index <= this->cableBrakeNum);
+bool BrakeController::OpenCableBrakeByIndex(int index){
+    if(!this->useCableBrake) return true;
+    if(!this->isConnected) return false;
+    if(!this->IsValidCableBrakeIndex(index)){
+        cerr << "Invalid cable brake index: " << index << endl;
+        return false;
+    }
     this->sendStr[3] = '0';
     this->sendStr[1] = '0' + CABLE_BRAKE_INDEX_START + index;
     // cout << "Sending Command: " << this->sendStr << " to cable brakes" << endl;
-    this->node.Send(this->sendStr);
-    Sleep(100);
-    this->cableBrakeFlag[index] = false;
+    if(!this->node.Send(this->sendStr)){
+        cerr << "Failed to open cable brake " << index << "." << endl;
+        return false;
+    }
+    if(this->isOnline) Sleep(100);
     cout << "Cable Brake " << index << " Opened." << endl;
+    return true;
 }
 
-void BrakeController::CloseCableBrakeByIndex(int index){
-    if(!this->useCableBrake) return;
-    assert(index >= 0 && index <= this->cableBrakeNum);
+bool BrakeController::CloseCableBrakeByIndex(int index){
+    if(!this->useCableBrake) return true;
+    if(!this->isConnected) return false;
+    if(!this->IsValidCableBrakeIndex(index)){
+        cerr << "Invalid cable brake index: " << index << endl;
+        return false;
+    }
     this->sendStr[3] = '1';
     this->sendStr[1] = '0' + CABLE_BRAKE_INDEX_START + index;
     // cout << "Sending Command: " << this->sendStr << " to cable brakes" << endl;
-    this->node.Send(this->sendStr);
-    Sleep(100);
-    this->cableBrakeFlag[index] = true;
-    cout << "Cable Brake " << index << " Closed." << endl;
-}
-
-void BrakeController::OpenAllCableBrake(){
-    if(!this->useCableBrake) return;
-    for(int i = 0; i < this->cableBrakeNum; i++){
-        this->OpenCableBrakeByIndex(i);
+    if(!this->node.Send(this->sendStr)){
+        cerr << "Failed to close cable brake " << index << "." << endl;
+        return false;
     }
-    Sleep(1000);
-    cout << "ALL Cable Brake Opened." << endl;
+    if(this->isOnline) Sleep(100);
+    cout << "Cable Brake " << index << " Closed." << endl;
+    return true;
 }
 
-void BrakeController::CloseAllCableBrake(){
-    if(!this->useCableBrake) return;
+bool BrakeController::OpenAllCableBrake(){
+    if(!this->useCableBrake) return true;
+    if(!this->isConnected) return false;
+    bool success = true;
+    for(int i = 0; i < this->cableBrakeNum; i++){
+        if(!this->OpenCableBrakeByIndex(i)){
+            success = false;
+        }
+    }
+    if(this->isOnline) Sleep(1000);
+    if(success){
+        cout << "ALL Cable Brake Opened." << endl;
+    }else{
+        cerr << "Failed to open one or more cable brakes." << endl;
+        if(!this->CloseAllCableBrake()){
+            cerr << "CRITICAL: Failed to re-close cable brakes after a partial open."
+                 << endl;
+        }
+    }
+    return success;
+}
+
+bool BrakeController::CloseAllCableBrake(){
+    if(!this->useCableBrake) return true;
+    if(!this->isConnected) return false;
     this->sendStr[3] = '1';
     this->sendStr[1] = '0' + CABLE_BRAKE_ALL;
     // cout << "Sending Command: " << this->sendStr << " to Brakes" << endl;
-    this->node.Send(this->sendStr);
-    for(int i = 0; i < this->cableBrakeNum; i++){
-        this->cableBrakeFlag[i] = true;
+    if(!this->node.Send(this->sendStr)){
+        cerr << "Failed to close all cable brakes." << endl;
+        return false;
     }
-    Sleep(100);
+    if(this->isOnline) Sleep(100);
     cout << "ALL Cable Brake Closed." << endl;
+    return true;
 }

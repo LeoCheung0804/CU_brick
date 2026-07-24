@@ -17,6 +17,31 @@ string userInput;
 Robot robot;
 Logger logger;
 
+void ShutdownRobotUntilSafe(const string& reason){
+    logger.LogError(reason);
+    cerr << reason << endl;
+    while(!robot.Disconnect()){
+        logger.LogError(
+            "Robot shutdown incomplete; controller connection remains active."
+        );
+        cerr << "CRITICAL: Secure the hardware, then press a key to retry "
+             << "shutdown." << endl;
+        system("pause");
+    }
+}
+
+bool RequireAutomatedGripperCommand(
+    bool commandSucceeded,
+    const string& description
+){
+    if(commandSucceeded) return true;
+    ShutdownRobotUntilSafe(
+        "Automated gripper command failed (" + description
+        + "); aborting controls."
+    );
+    return false;
+}
+
 void DrawBricksASCII(int brickType){
     if(brickType  == 1){
         cout << "  ########################  " << endl;
@@ -70,16 +95,19 @@ void PrintGripperControlMenu(){
 
 void GripperControlMode(){    
     while(true){
+        if(!robot.IsConnected()) return;
         PrintGripperControlMenu();
         cin >> userInput;
         if(userInput == "q"){
             cout << "Bye" << endl;
             break;
         }else if(userInput == "1"){
-            robot.gripper.Close();
+            if(!robot.gripper.Close())
+                cerr << "Gripper close command failed." << endl;
             system("pause");
         }else if(userInput == "2"){
-            robot.gripper.Open();
+            if(!robot.gripper.Open())
+                cerr << "Gripper open command failed." << endl;
             system("pause");
         }else if(userInput == "3"){
             while(true){
@@ -111,14 +139,16 @@ void GripperControlMode(){
                     char* p;
                     int angle = strtol(userInput.c_str(), &p, 10);
                     if(!*p) {
-                        robot.gripper.Rotate(angle);
+                        if(!robot.gripper.Rotate(angle))
+                            cerr << "Gripper rotation command failed." << endl;
                     }else{
                         cout << "Please enter intager!!!";
                     }
                 }
             }
         }else if(userInput == "4"){
-            robot.gripper.Release();
+            if(!robot.gripper.Release())
+                cerr << "Gripper release command failed." << endl;
             system("pause");
         }else if(userInput == "5"){
             robot.gripper.Calibrate();
@@ -127,7 +157,13 @@ void GripperControlMode(){
             robot.gripper.Reset();
             system("pause");
         }else if(userInput == "7"){
-            robot.gripper.Reconnect();
+            if(!robot.gripper.Reconnect()){
+                cerr << "Failed to reconnect gripper." << endl;
+                ShutdownRobotUntilSafe(
+                    "Gripper reconnect failed; forcing fail-safe robot shutdown."
+                );
+                return;
+            }
             system("pause");
         }
     }
@@ -159,22 +195,24 @@ void PrintCableMotorControlMenu(){
 
 void CableMotorControlMode(){
     while(true){
+        if(!robot.IsConnected()) return;
         PrintCableMotorControlMenu();
         cin >> userInput;
         if(userInput == "q"){ // Quit Calibration Mode
             break;
         }else if(userInput == "1"){ // Select Cable
             while(true){
-                cout << "Please Enter Cable Index (0-7): ";
+                cout << "Please Enter Cable Index (0-"
+                     << robot.GetCableMotorNum() - 1 << "): ";
                 cin >> userInput;
                 char* p;
                 int index = strtol(userInput.c_str(), &p, 10);
-                if(!*p && index >=0 && index <=7) {
+                if(!*p && index >= 0 && index < robot.GetCableMotorNum()) {
                     selectedCable = index;
                     cout << "Cable " << index << " Selected" << endl;
                     break;
                 }else{
-                    cout << "Please enter number 0 - 7!!!" << endl;
+                    cout << "Please enter a configured cable index." << endl;
                 }
             }
             system("pause");
@@ -193,7 +231,16 @@ void CableMotorControlMode(){
                     continue;
                 }
                 cout << "Setting to Target Torque: " << targetTrq << endl;
-                robot.cable.SetCableTrqByIndex(selectedCable, targetTrq, 4);
+                if(!robot.cable.SetCableTrqByIndex(
+                    selectedCable,
+                    static_cast<float>(targetTrq),
+                    4
+                )){
+                    ShutdownRobotUntilSafe(
+                        "Cable torque adjustment could not verify a safe stop."
+                    );
+                    return;
+                }
             }else{
                 cout << "Please enter a number !!!" << endl;
             }
@@ -214,7 +261,17 @@ void CableMotorControlMode(){
                             cout << "Step too large! range should be in -0.5m(" << -0.5 * robot.GetCableMotorScale(selectedCable) << ") ~ 0.5m(" << 0.5 * robot.GetCableMotorScale(selectedCable) << ")." << endl;
                             continue;
                         }
-                        robot.cable.MoveSingleMotorCmd(selectedCable, step, false);
+                        if(!robot.cable.MoveSingleMotorCmd(selectedCable, step, false)){
+                            if(!robot.cable.StopAllMotor()){
+                                ShutdownRobotUntilSafe(
+                                    "Cable move failed and motors could not be stopped."
+                                );
+                                return;
+                            }
+                            cerr << "Cable move failed; remaining commands aborted."
+                                 << endl;
+                            break;
+                        }
                     }else{
                         cout << "Please enter an intager number!!!" << endl;
                     }
@@ -236,7 +293,21 @@ void CableMotorControlMode(){
                             cout << "Step too large! range should be in -0.5 ~ 0.5." << endl;
                             continue;
                         }
-                        robot.cable.MoveSingleMotorCmd(selectedCable, robot.CableMotorLengthToCmd(selectedCable, length), false);
+                        if(!robot.cable.MoveSingleMotorCmd(
+                            selectedCable,
+                            robot.CableMotorLengthToCmd(selectedCable, length),
+                            false
+                        )){
+                            if(!robot.cable.StopAllMotor()){
+                                ShutdownRobotUntilSafe(
+                                    "Cable move failed and motors could not be stopped."
+                                );
+                                return;
+                            }
+                            cerr << "Cable move failed; remaining commands aborted."
+                                 << endl;
+                            break;
+                        }
                     }else{
                         cout << "Please enter a number!!!" << endl;
                     }
@@ -254,12 +325,25 @@ void CableMotorControlMode(){
                     int step = strtol(userInput.c_str(), &p, 10);
                     if(!*p) {
                         cout << "Moving ALL Cable By Step: " << step << endl;
+                        bool stepIsValid = true;
                         for(int i = 0; i < robot.GetCableMotorNum(); i++){
                             if(step / robot.GetCableMotorScale(i) > 0.5 || step / robot.GetCableMotorScale(i) < -0.5){
                                 cout << "Step too large! range should be in -0.5m(" << -0.5 * robot.GetCableMotorScale(i) << ") ~ 0.5m(" << 0.5 * robot.GetCableMotorScale(i) << ")." << endl;
-                                continue;
+                                stepIsValid = false;
+                                break;
                             }
-                            robot.cable.MoveSingleMotorCmd(i, step, false);
+                        }
+                        if(!stepIsValid)
+                            continue;
+                        if(!robot.cable.MoveAllMotorCmd(step, false)){
+                            if(!robot.cable.StopAllMotor()){
+                                ShutdownRobotUntilSafe(
+                                    "Cable group move failed and motors could not be stopped."
+                                );
+                                return;
+                            }
+                            cerr << "Cable group move failed and was stopped." << endl;
+                            break;
                         }
                     }else{
                         cout << "Please enter an intager number!!!" << endl;
@@ -282,8 +366,24 @@ void CableMotorControlMode(){
                             cout << "Step too large! range should be in -0.5m(" << -0.5 * robot.GetCableMotorScale(selectedCable) << ") ~ 0.5m(" << 0.5 * robot.GetCableMotorScale(selectedCable) << ")." << endl;
                             continue;
                         }
+                        vector<int32_t> commands;
+                        commands.reserve(
+                            static_cast<size_t>(robot.GetCableMotorNum())
+                        );
                         for(int i = 0; i < robot.GetCableMotorNum(); i++){
-                            robot.cable.MoveSingleMotorCmd(i, robot.CableMotorLengthToCmd(i, length), false);
+                            commands.push_back(
+                                robot.CableMotorLengthToCmd(i, length)
+                            );
+                        }
+                        if(!robot.cable.MoveAllMotorCmd(commands, false)){
+                            if(!robot.cable.StopAllMotor()){
+                                ShutdownRobotUntilSafe(
+                                    "Cable group move failed and motors could not be stopped."
+                                );
+                                return;
+                            }
+                            cerr << "Cable group move failed and was stopped." << endl;
+                            break;
                         }
                     }else{
                         cout << "Please enter a number!!!" << endl;
@@ -388,23 +488,27 @@ void PrintRailMotorControlMenu(int selectedRailMotor){
 void RailMotorControlMode(){
     int selectedRailMotor = 0;
     while(true){
+        if(!robot.IsConnected()) return;
         PrintRailMotorControlMenu(selectedRailMotor);
         cin >> userInput;
         if(userInput == "q"){ // Quit Calibration Mode
             break;
         }else if(userInput == "1"){ // Select Rail
             while(true){
-                cout << "Please Enter Rail Index (0-4): ";
+                cout << "Please Enter Rail Index (0-"
+                     << robot.GetRailMotorNum() - 1 << "): ";
                 cin >> userInput;
                 char* p;
                 int index = strtol(userInput.c_str(), &p, 10);
-                if(!*p && index >=0 && index <=4) {
+                if(!*p
+                    && index >= 0
+                    && index < robot.GetRailMotorNum()
+                    && robot.rail.SelectWorkingMotor(index)) {
                     selectedRailMotor = index;
-                    robot.rail.SelectWorkingMotor(index);
                     cout << "Rail " << index << " Selected" << endl;
                     break;
                 }else{
-                    cout << "Please enter number 0 - 4!!!" << endl;
+                    cout << "Please enter a valid rail index." << endl;
                 }
             }
             system("pause");
@@ -420,8 +524,14 @@ void RailMotorControlMode(){
                     int step = strtol(userInput.c_str(), &p, 10);
                     if(!*p) {
                         cout << "Moving Rail " << selectedRailMotor << " To Absolute Step: " << step << endl;
-                        robot.rail.MoveSelectedMotorCmdAbsulote(step);
-                        robot.railOffset[selectedRailMotor] = step;
+                        if(robot.rail.MoveSelectedMotorCmdAbsulote(step)){
+                            robot.railOffset[selectedRailMotor] = step;
+                        }else{
+                            ShutdownRobotUntilSafe(
+                                "Rail move failed; aborting controls."
+                            );
+                            return;
+                        }
                     }else{
                         cout << "Please enter an intager number!!!" << endl;
                     }
@@ -437,10 +547,18 @@ void RailMotorControlMode(){
                 }else{
                     char* p;
                     double length = strtod(userInput.c_str(), &p);
-                    if(!*p) {
+                    if(!*p && std::isfinite(length)) {
                         cout << "Moving Rail " << selectedRailMotor << " To Absolute Length: " << length << endl;
-                        robot.rail.MoveSelectedMotorCmdAbsulote(robot.RailMotorLengthToCmd(selectedRailMotor, length));
-                        robot.railOffset[selectedRailMotor] = length;
+                        if(robot.rail.MoveSelectedMotorCmdAbsulote(
+                            robot.RailMotorLengthToCmd(selectedRailMotor, length)
+                        )){
+                            robot.railOffset[selectedRailMotor] = length;
+                        }else{
+                            ShutdownRobotUntilSafe(
+                                "Rail move failed; aborting controls."
+                            );
+                            return;
+                        }
                     }else{
                         cout << "Please enter a number!!!" << endl;
                     }
@@ -458,11 +576,20 @@ void RailMotorControlMode(){
                     int step = strtol(userInput.c_str(), &p, 10);
                     if(!*p) {
                         cout << "Moving ALL Rail To Absolute Step: " << step << endl;
-                        for(int i = 0; i < robot.GetCableMotorNum(); i++){
-                            robot.rail.SelectWorkingMotor(i);
-                            robot.rail.MoveSelectedMotorCmdAbsulote(step);
+                        for(int i = 0; i < robot.GetRailMotorNum(); i++){
+                            if(!robot.rail.MoveMotorCmdAbsuloteById(i, step)){
+                                ShutdownRobotUntilSafe(
+                                    "Rail group move failed; aborting controls."
+                                );
+                                return;
+                            }
                         }
-                        robot.rail.SelectWorkingMotor(selectedRailMotor);
+                        if(!robot.rail.SelectWorkingMotor(selectedRailMotor)){
+                            ShutdownRobotUntilSafe(
+                                "Failed to restore selected rail motor."
+                            );
+                            return;
+                        }
                     }else{
                         cout << "Please enter an intager number!!!" << endl;
                     }
@@ -478,14 +605,26 @@ void RailMotorControlMode(){
                 }else{
                     char* p;
                     double length = strtod(userInput.c_str(), &p);
-                    if(!*p) {
+                    if(!*p && std::isfinite(length)) {
                         cout << "Moving ALL Rail To Absolute Length: " << length << endl;
-                        for(int i = 0; i < robot.GetCableMotorNum(); i++){
-                            robot.rail.SelectWorkingMotor(i);
-                            robot.rail.MoveSelectedMotorCmdAbsulote(robot.RailMotorLengthToCmd(i, length));
+                        for(int i = 0; i < robot.GetRailMotorNum(); i++){
+                            if(!robot.rail.MoveMotorCmdAbsuloteById(
+                                i,
+                                robot.RailMotorLengthToCmd(i, length)
+                            )){
+                                ShutdownRobotUntilSafe(
+                                    "Rail group move failed; aborting controls."
+                                );
+                                return;
+                            }
                             robot.railOffset[i] = length;
                         }
-                        robot.rail.SelectWorkingMotor(selectedRailMotor);
+                        if(!robot.rail.SelectWorkingMotor(selectedRailMotor)){
+                            ShutdownRobotUntilSafe(
+                                "Failed to restore selected rail motor."
+                            );
+                            return;
+                        }
                     }else{
                         cout << "Please enter a number!!!" << endl;
                     }
@@ -493,19 +632,39 @@ void RailMotorControlMode(){
             }
         }else if(userInput == "6"){ // Open Selected Rail Brake
             cout << "Opening Rail " << selectedRailMotor << " Brake" << endl;
-            robot.brake.OpenRailBrakeByIndex(selectedRailMotor);
+            if(!robot.brake.OpenRailBrakeByIndex(selectedRailMotor)){
+                ShutdownRobotUntilSafe(
+                    "Failed to open selected rail brake; aborting controls."
+                );
+                return;
+            }
             system("pause");
         }else if(userInput == "7"){ // Close Selected Rail Brake
             cout << "Closing Rail " << selectedRailMotor << " Brake" << endl;
-            robot.brake.CloseRailBrakeByIndex(selectedRailMotor);
+            if(!robot.brake.CloseRailBrakeByIndex(selectedRailMotor)){
+                ShutdownRobotUntilSafe(
+                    "Failed to close selected rail brake; aborting controls."
+                );
+                return;
+            }
             system("pause");
         }else if(userInput == "8"){ // Open ALL Rail Brake
             cout << "Opening ALL Rail Brake" << endl;
-            robot.brake.OpenAllRailBrake();
+            if(!robot.brake.OpenAllRailBrake()){
+                ShutdownRobotUntilSafe(
+                    "Failed to open all rail brakes; aborting controls."
+                );
+                return;
+            }
             system("pause");
         }else if(userInput == "9"){ // Close ALL Rail Brake
             cout << "Closing ALL Rail Brake" << endl;
-            robot.brake.CloseAllRailBrake();
+            if(!robot.brake.CloseAllRailBrake()){
+                ShutdownRobotUntilSafe(
+                    "Failed to close all rail brakes; aborting controls."
+                );
+                return;
+            }
             system("pause");
         }
     }
@@ -533,6 +692,7 @@ void RobotPosControlMode(){
     int sleepTime = 120;
     int moveTime = 100;
     while(true){
+        if(!robot.IsConnected()) return;
         if(GetKeyState('Q') & 0x8000)
         {
             Sleep(100);
@@ -608,23 +768,27 @@ void RailControlMode(){
     
     int selectedRail = 0;
     while(true){
+        if(!robot.IsConnected()) return;
         PrintRailControlMenu(selectedRail);
         cin >> userInput;
         if(userInput == "q"){ // Quit Calibration Mode
             break;
         }else if(userInput == "1"){ // Select Rail
             while(true){
-                cout << "Please Enter Rail Index (0-4): ";
+                cout << "Please Enter Rail Index (0-"
+                     << robot.GetRailMotorNum() - 1 << "): ";
                 cin >> userInput;
                 char* p;
                 int index = strtol(userInput.c_str(), &p, 10);
-                if(!*p && index >=0 && index <=4) {
+                if(!*p
+                    && index >= 0
+                    && index < robot.GetRailMotorNum()
+                    && robot.rail.SelectWorkingMotor(index)) {
                     selectedRail = index;
-                    robot.rail.SelectWorkingMotor(index);
                     cout << "Rail " << index << " Selected" << endl;
                     break;
                 }else{
-                    cout << "Please enter number 0 - 4!!!" << endl;
+                    cout << "Please enter a valid rail index." << endl;
                 }
             }
             system("pause");
@@ -638,11 +802,24 @@ void RailControlMode(){
                 }else{
                     char* p;
                     double length = strtod(userInput.c_str(), &p);
-                    if(!*p) {
+                    if(!*p && std::isfinite(length)) {
                         cout << "Moving Rail " << selectedRail << " To Absolute Length: " << length << " Count: " << robot.RailMotorLengthToCmd(selectedRail, length) << endl;
                         // int cableIndex = (selectedRail + robot.railMotorCableMotorOffset) % 4;
-                        robot.RaiseRailWithCableByLengthAbsulote(selectedRail, selectedRail, length);
-                        logger.LogInfo("Raise rail " + to_string(selectedRail) + " to " + to_string(length));
+                        if(robot.RaiseRailWithCableByLengthAbsulote(
+                            selectedRail,
+                            selectedRail,
+                            static_cast<float>(length)
+                        )){
+                            logger.LogInfo("Raise rail " + to_string(selectedRail) + " to " + to_string(length));
+                        }else{
+                            logger.LogError("Failed to raise rail " + to_string(selectedRail));
+                            if(!robot.IsConnected()){
+                                ShutdownRobotUntilSafe(
+                                    "Coordinated rail move left shutdown state unverified."
+                                );
+                                return;
+                            }
+                        }
                     }else{
                         cout << "Please enter a number!!!" << endl;
                     }
@@ -658,15 +835,32 @@ void RailControlMode(){
                 }else{
                     char* p;
                     double length = strtod(userInput.c_str(), &p);
-                    if(!*p) {
+                    if(!*p && std::isfinite(length)) {
                         cout << "Moving ALL Rail To Absolute Length: " << length << " Count: " << robot.RailMotorLengthToCmd(selectedRail, length) << endl;
                         for(int i = 0; i < robot.GetRailMotorNum(); i++){
-                            robot.rail.SelectWorkingMotor(i);
+                            if(!robot.rail.SelectWorkingMotor(i)){
+                                logger.LogError("Failed to select rail " + to_string(i));
+                                break;
+                            }
                             // int cableIndex = (i + robot.railMotorCableMotorOffset) % 4;
-                            robot.RaiseRailWithCableByLengthAbsulote(i, i, length);
+                            if(!robot.RaiseRailWithCableByLengthAbsulote(
+                                i,
+                                i,
+                                static_cast<float>(length)
+                            )){
+                                logger.LogError("Failed to raise rail " + to_string(i));
+                                if(!robot.IsConnected()){
+                                    ShutdownRobotUntilSafe(
+                                        "Coordinated rail move left shutdown state unverified."
+                                    );
+                                    return;
+                                }
+                                break;
+                            }
                             logger.LogInfo("Raise rail " + to_string(i) + " to " + to_string(length));
                         }
-                        robot.rail.SelectWorkingMotor(selectedRail);
+                        if(!robot.rail.SelectWorkingMotor(selectedRail))
+                            logger.LogError("Failed to restore selected rail motor.");
                     }else{
                         cout << "Please enter a number!!!" << endl;
                     }
@@ -690,6 +884,7 @@ void PrintRobotControlMenu(){
 
 void RobotControlMode(){
     while(true){
+        if(!robot.IsConnected()) return;
         PrintRobotControlMenu();
         cin >> userInput;
 
@@ -717,12 +912,24 @@ void RobotControlMode(){
             system("pause");
         }else if(userInput == "4"){ // gripper control mode
             GripperControlMode();
+            if(!robot.IsConnected()) return;
         }else if(userInput == "5"){ // Rail Control
             // robot.brake.OpenAllCableBrake();
-            robot.brake.OpenAllRailBrake();
+            if(!robot.brake.OpenAllRailBrake()){
+                ShutdownRobotUntilSafe(
+                    "Rail control aborted: rail brakes could not be opened."
+                );
+                return;
+            }
             RailControlMode();
+            if(!robot.IsConnected()) return;
             // robot.brake.CloseAllCableBrake();
-            robot.brake.CloseAllRailBrake();
+            if(!robot.brake.CloseAllRailBrake()){
+                ShutdownRobotUntilSafe(
+                    "Failed to close all rail brakes after rail control."
+                );
+                return;
+            }
         }
     }
 }
@@ -748,6 +955,7 @@ void PrintCalibrationMenu(){
 
 void CalibrationMode(){ 
     while(true){
+        if(!robot.IsConnected()) return;
         PrintCalibrationMenu();
         cin >> userInput;
         if(userInput == "q"){ // Quit Calibration Mode
@@ -768,7 +976,15 @@ void CalibrationMode(){
                 }
                 cout << "Setting to Target Torque: " << targetTrq << endl;
                 // robot.brake.OpenAllCableBrake();
-                robot.cable.SetCableTrq(targetTrq, 4);
+                if(!robot.cable.SetCableTrq(
+                    static_cast<float>(targetTrq),
+                    4
+                )){
+                    ShutdownRobotUntilSafe(
+                        "Cable torque adjustment could not verify a safe stop."
+                    );
+                    return;
+                }
                 // robot.brake.CloseAllCableBrake();
             }else{
                 cout << "Please enter a number !!!" << endl;
@@ -791,7 +1007,14 @@ void CalibrationMode(){
             cout << "Please Enter Robot Position File Path (Default lastPos.txt): ";
             getchar();
             getline(cin, robotPosPath);
-            robot.UpdatePosFromFile(robotPosPath  != "" ? robotPosPath : "lastPos.txt");
+            if(!robot.UpdatePosFromFile(
+                robotPosPath != "" ? robotPosPath : "lastPos.txt"
+            )){
+                ShutdownRobotUntilSafe(
+                    "Position-file calibration failed; aborting controls."
+                );
+                return;
+            }
             logger.LogPos(robot.endEffectorPos, robot.railOffset);
             if(!robot.CheckLimits()){
                 logger.LogWarning("New Position is beyond robot limit.");
@@ -805,23 +1028,47 @@ void CalibrationMode(){
             // robot.brake.CloseAllCableBrake();
             system("pause");
         }else if(userInput == "6"){ // Control Linear Rail Motor
-            robot.brake.OpenAllRailBrake();
+            if(!robot.brake.OpenAllRailBrake()){
+                ShutdownRobotUntilSafe(
+                    "Rail control aborted: rail brakes could not be opened."
+                );
+                return;
+            }
             RailMotorControlMode();
-            robot.brake.CloseAllRailBrake();
+            if(!robot.IsConnected()) return;
+            if(!robot.brake.CloseAllRailBrake()){
+                ShutdownRobotUntilSafe(
+                    "Failed to close all rail brakes after rail control."
+                );
+                return;
+            }
         }else if(userInput == "7"){ // Control Gripper
             GripperControlMode();
+            if(!robot.IsConnected()) return;
         }else if(userInput == "8"){ // Update Robot Config
             string robotConfigPath;
             cout << "Please Enter Robot Config File Path (Default RobotConfig.json): ";
             getchar();
             getline(cin, robotConfigPath);
-            robot.UpdateModelFromFile(robotConfigPath  != "" ? robotConfigPath : "RobotConfig.json");
-            while(!robot.IsValid()){
+            bool configUpdated = robot.UpdateModelFromFile(
+                robotConfigPath != "" ? robotConfigPath : "RobotConfig.json",
+                true
+            );
+            while(!configUpdated && !robot.IsValid()){
                 cout << "Config file invalid, please use correct config file." << endl;
                 string robotConfigFile;
                 cout << "Please Enter Robot Configuration File Path (Default RobotConfig.json): ";
                 getline(cin, robotConfigFile);
-                robot.UpdateModelFromFile(robotConfigFile != "" ? robotConfigFile : "RobotConfig.json");
+                configUpdated = robot.UpdateModelFromFile(
+                    robotConfigFile != "" ? robotConfigFile : "RobotConfig.json",
+                    true
+                );
+            }
+            if(!configUpdated || !robot.IsConnected()){
+                ShutdownRobotUntilSafe(
+                    "Robot reconnect after configuration update failed."
+                );
+                return;
             }
             system("pause");
         }else if(userInput == "9"){ // print current status
@@ -842,9 +1089,32 @@ void CalibrationMode(){
             }
 
             // Create UDP socket
+            bool rpiWinsockInitialized = true;
             SOCKET udpSocket = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
+            const auto cleanupRPiSocket = [&udpSocket, &rpiWinsockInitialized](){
+                if(udpSocket != INVALID_SOCKET){
+                    if(closesocket(udpSocket) == SOCKET_ERROR){
+                        cout << "Failed to close RPi socket" << endl;
+                        return false;
+                    }
+                    udpSocket = INVALID_SOCKET;
+                }
+                if(rpiWinsockInitialized && WSACleanup() == SOCKET_ERROR){
+                    cout << "Failed to release Winsock" << endl;
+                    return false;
+                }
+                rpiWinsockInitialized = false;
+                return true;
+            };
+            const auto cleanupRPiSocketUntilReleased = [&cleanupRPiSocket](){
+                while(!cleanupRPiSocket()){
+                    cout << "RPi network cleanup is incomplete; retrying." << endl;
+                    system("pause");
+                }
+            };
             if (udpSocket == INVALID_SOCKET) {
                 cout << "Failed to create socket" << endl;
+                cleanupRPiSocketUntilReleased();
                 system("pause");
                 continue;
             }
@@ -859,18 +1129,26 @@ void CalibrationMode(){
             const char* request = "get_position";
             if (sendto(udpSocket, request, strlen(request), 0, (sockaddr*)&serverAddr, sizeof(serverAddr)) == SOCKET_ERROR) {
                 cout << "Failed to send request" << endl;
-                closesocket(udpSocket);
+                cleanupRPiSocketUntilReleased();
                 system("pause");
+                continue;
             }
 
             // Receive response
             char buffer[1024];
             int serverAddrLen = sizeof(serverAddr);
-            int bytesReceived = recvfrom(udpSocket, buffer, sizeof(buffer), 0, (sockaddr*)&serverAddr, &serverAddrLen);
+            int bytesReceived = recvfrom(
+                udpSocket,
+                buffer,
+                sizeof(buffer) - 1,
+                0,
+                (sockaddr*)&serverAddr,
+                &serverAddrLen
+            );
             
             if (bytesReceived == SOCKET_ERROR) {
                 cout << "Failed to receive response" << endl;
-                closesocket(udpSocket);
+                cleanupRPiSocketUntilReleased();
                 system("pause");
                 continue;
             }
@@ -880,7 +1158,7 @@ void CalibrationMode(){
             cout << "Received position data: " << buffer << endl;
 
             // Close socket
-            closesocket(udpSocket);
+            cleanupRPiSocketUntilReleased();
             // parse the buffer to json
             json jsonData;
             try{
@@ -903,9 +1181,13 @@ void CalibrationMode(){
             if(userInput == "y"){
                 // update robot position
                 double measuredPos[6] = {jsonData["x"], jsonData["y"], jsonData["z"], jsonData["roll"], jsonData["pitch"], jsonData["yaw"]};
-                robot.UpdatePos(measuredPos);
+                if(!robot.UpdatePos(measuredPos)){
+                    ShutdownRobotUntilSafe(
+                        "Position calibration failed; aborting controls."
+                    );
+                    return;
+                }
             }
-            WSACleanup();
         }
     }
 }
@@ -943,6 +1225,7 @@ void PrintOperationMenu(){
 
 void OperationMode(){
     while(true){
+        if(!robot.IsConnected()) return;
         PrintOperationMenu();
         cin >> userInput;
         if(userInput == "q"){ // Quit Calibration Mode
@@ -972,7 +1255,12 @@ void OperationMode(){
             robot.PrintBrickPickUpPos();
             cout << "Speed Limit: " << robot.GetEffVelLmt() << "m/s" << endl;
             double goalPos[6] = {0};
-            robot.brake.OpenAllCableBrake();
+            if(!robot.brake.OpenAllCableBrake()){
+                ShutdownRobotUntilSafe(
+                    "Brick operation aborted: cable brakes could not be opened."
+                );
+                return;
+            }
             double safePt[6] = {8.24, 6.51, -0.6, 0, 0, -0.0237}; // a safe area near to the arm // 0.21 safe height from ABB
             bool stop = false;
             string brickTypes[4] = {"??Should not show this, please check", "holes", "normal", "half"};
@@ -982,8 +1270,14 @@ void OperationMode(){
                 vector<double> brickPos = brickPosList[i];
                 brickType = int(brickPos[5]);
                 // Move to pre pick up position
-                robot.gripper.Rotate(90);
-                robot.gripper.Open();
+                if(!RequireAutomatedGripperCommand(
+                    robot.gripper.Rotate(90),
+                    "pre-pickup rotation"
+                )) return;
+                if(!RequireAutomatedGripperCommand(
+                    robot.gripper.Open(),
+                    "pre-pickup open"
+                )) return;
 
                 copy(robot.brickPickUpPos, robot.brickPickUpPos + 6, goalPos);
                 goalPos[5] = 0.0141; // calculated yaw for +0.21 height
@@ -1012,7 +1306,10 @@ void OperationMode(){
                 if(!robot.MoveToParaBlend(goalPos, robot.safeT * 1.2, true)) break;
 
                 // Sleep(600); //////////// FOR TESTING ONYL, delete later!!!!!!!!!!!!!!!!!!
-                robot.gripper.Close();
+                if(!RequireAutomatedGripperCommand(
+                    robot.gripper.Close(),
+                    "brick pickup close"
+                )) return;
                 Sleep(800); // wait for grippper to close
 
                 // raise brick
@@ -1037,7 +1334,15 @@ void OperationMode(){
                 if(!robot.MoveToParaBlend(goalPos, true)) break;
 
                 // rotate gripper to target rotation
-                robot.gripper.Rotate((int)(brickPos[4] + 92.2 - brickPos[3]/3.1415965*180)); // <-+27, constant frame to gripper offset; - yaw rotation in EE
+                if(!RequireAutomatedGripperCommand(
+                    robot.gripper.Rotate(
+                        static_cast<int>(
+                            brickPos[4] + 92.2
+                            - brickPos[3] / 3.1415965 * 180
+                        )
+                    ),
+                    "brick placement rotation"
+                )) return;
 
                 double safeH = 0.3; // meter, safety height from building brick level
                 // avoid the 5th pole
@@ -1107,7 +1412,10 @@ void OperationMode(){
                 Sleep(1000); // wait for grippper to stop
                 if(!robot.MoveToParaBlend(goalPos, robot.safeT, true)) break;
 
-                robot.gripper.Open();
+                if(!RequireAutomatedGripperCommand(
+                    robot.gripper.Open(),
+                    "brick placement open"
+                )) return;
                 Sleep(200); //Wait a while after placing brick
 
                 // Rise and leave building area
@@ -1163,8 +1471,24 @@ void OperationMode(){
             cout << "The file contains " << trajList.size() << " points." << endl;
             if(!CheckContinue()) continue;
             // robot.brake.OpenAllCableBrake();
-            robot.MoveToParaBlend(&(trajList[0])[0]);
-            robot.RunCableTraj(trajList);
+            if(!robot.MoveToParaBlend(&(trajList[0])[0])){
+                cout << "Could not move to the trajectory start point; trajectory aborted."
+                     << endl;
+                if(!robot.IsConnected()){
+                    ShutdownRobotUntilSafe(
+                        "Trajectory positioning failed and left the robot unavailable."
+                    );
+                    return;
+                }
+                system("pause");
+                continue;
+            }
+            if(!robot.RunCableTraj(trajList) && !robot.IsConnected()){
+                ShutdownRobotUntilSafe(
+                    "Trajectory execution failed and left the robot unavailable."
+                );
+                return;
+            }
             // robot.brake.CloseAllCableBrake();
             system("pause");
         }else if(userInput == "5"){ // requst current torque readings
@@ -1209,15 +1533,26 @@ void OperationMode(){
             robot.PrintBrickPickUpPos();
             cout << "Speed Limit: " << robot.GetEffVelLmt() << "m/s" << endl;
             double goalPos[6] = {0};
-            robot.brake.OpenAllCableBrake();
+            if(!robot.brake.OpenAllCableBrake()){
+                ShutdownRobotUntilSafe(
+                    "Brick operation aborted: cable brakes could not be opened."
+                );
+                return;
+            }
             bool stop = false;
             string brickTypes[4] = {"??Should not show this, please check", "holes", "normal", "half"};
             int brickType = 0;
             for(int i = brickIndex; i < brickPosList.size(); i++){
                 vector<double> brickPos = brickPosList[i];
                 // Move to pre pick up position
-                robot.gripper.Rotate(90);
-                robot.gripper.Open();
+                if(!RequireAutomatedGripperCommand(
+                    robot.gripper.Rotate(90),
+                    "demo pre-pickup rotation"
+                )) return;
+                if(!RequireAutomatedGripperCommand(
+                    robot.gripper.Open(),
+                    "demo pre-pickup open"
+                )) return;
 
                 copy(robot.brickPickUpPos, robot.brickPickUpPos + 6, goalPos);
                 goalPos[2] += 0.2; // 0.2 safe height from ABB
@@ -1241,7 +1576,10 @@ void OperationMode(){
                 if(!robot.MoveToParaBlend(goalPos, robot.safeT * 1.2, true)) break;
 
                 // Sleep(600); //////////// FOR TESTING ONYL, delete later!!!!!!!!!!!!!!!!!!
-                robot.gripper.Close();
+                if(!RequireAutomatedGripperCommand(
+                    robot.gripper.Close(),
+                    "demo brick pickup close"
+                )) return;
                 Sleep(800); // wait for grippper to close
 
                 // raise brick
@@ -1255,7 +1593,15 @@ void OperationMode(){
                 Sleep(800); // wait for grippper to stop
                 if(!robot.MoveToParaBlend(goalPos, robot.safeT, true)) break;
                 // rotate gripper to target rotation
-                robot.gripper.Rotate((int)(brickPos[4] + 92.2 - brickPos[3]/3.1415965*180)); // <-+27, constant frame to gripper offset; - yaw rotation in EE
+                if(!RequireAutomatedGripperCommand(
+                    robot.gripper.Rotate(
+                        static_cast<int>(
+                            brickPos[4] + 92.2
+                            - brickPos[3] / 3.1415965 * 180
+                        )
+                    ),
+                    "demo brick placement rotation"
+                )) return;
                 double safeH = 0.2; // meter, safety height from building brick level
                 
                 // Go to brick placing position
@@ -1281,7 +1627,10 @@ void OperationMode(){
                 Sleep(1000); // wait for grippper to stop
                 if(!robot.MoveToParaBlend(goalPos, robot.safeT, true)) break;
 
-                robot.gripper.Open();
+                if(!RequireAutomatedGripperCommand(
+                    robot.gripper.Open(),
+                    "demo brick placement open"
+                )) return;
                 Sleep(200); //Wait a while after placing brick
 
                 // Rise and leave building area
@@ -1304,7 +1653,10 @@ void OperationMode(){
                 Sleep(1000); // wait for ee to stop
                 if(!robot.MoveToParaBlend(goalPos, robot.safeT, true)) break;
                 // Sleep(600); //////////// FOR TESTING ONYL, delete later!!!!!!!!!!!!!!!!!!
-                robot.gripper.Close();
+                if(!RequireAutomatedGripperCommand(
+                    robot.gripper.Close(),
+                    "demo brick re-grip close"
+                )) return;
                 Sleep(800); // wait for grippper to close
 
                 // Rise and leave building area
@@ -1339,7 +1691,10 @@ void OperationMode(){
                 Sleep(1000); // wait for grippper to stop
                 if(!robot.MoveToParaBlend(goalPos, robot.safeT, true)) break;
 
-                robot.gripper.Open();
+                if(!RequireAutomatedGripperCommand(
+                    robot.gripper.Open(),
+                    "demo return placement open"
+                )) return;
                 Sleep(200); //Wait a while after placing brick
 
                 // Rise and leave building area
@@ -1373,9 +1728,35 @@ void OperationMode(){
             }
 
             // Create UDP socket
+            bool autoAimWinsockInitialized = true;
             SOCKET udpSocket = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
+            const auto cleanupAutoAimSocket =
+                [&udpSocket, &autoAimWinsockInitialized](){
+                if(udpSocket != INVALID_SOCKET){
+                    if(closesocket(udpSocket) == SOCKET_ERROR){
+                        cout << "Failed to close auto-aim socket" << endl;
+                        return false;
+                    }
+                    udpSocket = INVALID_SOCKET;
+                }
+                if(autoAimWinsockInitialized && WSACleanup() == SOCKET_ERROR){
+                    cout << "Failed to release Winsock" << endl;
+                    return false;
+                }
+                autoAimWinsockInitialized = false;
+                return true;
+            };
+            const auto cleanupAutoAimSocketUntilReleased =
+                [&cleanupAutoAimSocket](){
+                while(!cleanupAutoAimSocket()){
+                    cout << "Auto-aim network cleanup is incomplete; retrying."
+                         << endl;
+                    system("pause");
+                }
+            };
             if (udpSocket == INVALID_SOCKET) {
                 cout << "Failed to create socket" << endl;
+                cleanupAutoAimSocketUntilReleased();
                 system("pause");
                 continue;
             }
@@ -1396,9 +1777,11 @@ void OperationMode(){
             double goalPos[6];
             copy(robot.endEffectorPos, robot.endEffectorPos + 6, goalPos);
             while (true) {
+                bool offsetRequestFailed = false;
                 for (int i = 0; i < 3; i++) {
                     if (!robot.GetMoveToBrickPos(udpSocket, serverAddr, offset, angle)) {
                         cout << "Failed to get offset from RPi." << endl;
+                        offsetRequestFailed = true;
                         break;
                     }
                     cout << "Received offset: x=" << offset[0] << ", y=" << offset[1] << ", z=" << offset[2] << endl;
@@ -1407,9 +1790,16 @@ void OperationMode(){
                     goalPos[1] += offset[1];
                     goalPos[2] += offset[2];
                     cout << "Moving to new position: x=" << goalPos[0] << ", y=" << goalPos[1] << ", z=" << goalPos[2] << endl;
-                    robot.MoveToParaBlend(goalPos, true);
+                    if(!robot.MoveToParaBlend(goalPos, true)){
+                        ShutdownRobotUntilSafe(
+                            "Auto-aim positioning failed; aborting controls."
+                        );
+                        cleanupAutoAimSocketUntilReleased();
+                        return;
+                    }
                     Sleep(500);
                 }
+                if(offsetRequestFailed) break;
 
                 char userInput;
                 cout << "Continue to next offset? (y/n/(g)rip/(p)lace): ";
@@ -1418,24 +1808,66 @@ void OperationMode(){
                     break;
                 else if (userInput == 'g' || userInput == 'G') {
                     cout << "Gripping the brick..." << endl;
-                    robot.gripper.Open();
+                    if(!robot.gripper.Open()){
+                        ShutdownRobotUntilSafe(
+                            "Auto-aim gripper open failed; aborting controls."
+                        );
+                        cleanupAutoAimSocketUntilReleased();
+                        return;
+                    }
                     goalPos[0] += camera_offset[0];
                     goalPos[1] += camera_offset[1];
                     goalPos[2] += -0.30;
-                    robot.MoveToParaBlend(goalPos, true);
-                    robot.gripper.Rotate(-angle);
+                    if(!robot.MoveToParaBlend(goalPos, true)){
+                        ShutdownRobotUntilSafe(
+                            "Auto-aim pickup approach failed; aborting controls."
+                        );
+                        cleanupAutoAimSocketUntilReleased();
+                        return;
+                    }
+                    if(!robot.gripper.Rotate(static_cast<int>(-angle))){
+                        ShutdownRobotUntilSafe(
+                            "Auto-aim gripper rotation failed; aborting controls."
+                        );
+                        cleanupAutoAimSocketUntilReleased();
+                        return;
+                    }
                     Sleep(1000);
                     goalPos[2] += -0.185;
-                    robot.MoveToParaBlend(goalPos, 2000, true);
-                    robot.gripper.Close();
+                    if(!robot.MoveToParaBlend(goalPos, 2000, true)){
+                        ShutdownRobotUntilSafe(
+                            "Auto-aim pickup descent failed; aborting controls."
+                        );
+                        cleanupAutoAimSocketUntilReleased();
+                        return;
+                    }
+                    if(!robot.gripper.Close()){
+                        ShutdownRobotUntilSafe(
+                            "Auto-aim gripper close failed; aborting controls."
+                        );
+                        cleanupAutoAimSocketUntilReleased();
+                        return;
+                    }
                     Sleep(1000);
                     copy(robot.homePos, robot.homePos+6, begin(goalPos)); // home x,y,z position
-                    robot.MoveToParaBlend(goalPos, true);
+                    if(!robot.MoveToParaBlend(goalPos, true)){
+                        ShutdownRobotUntilSafe(
+                            "Auto-aim return-home motion failed; aborting controls."
+                        );
+                        cleanupAutoAimSocketUntilReleased();
+                        return;
+                    }
 
                     break;
                 } else if (userInput == 'p' || userInput == 'P') {
                     cout << "Placing the brick..." << endl;
-                    robot.gripper.Rotate(-angle);
+                    if(!robot.gripper.Rotate(static_cast<int>(-angle))){
+                        ShutdownRobotUntilSafe(
+                            "Auto-aim placement rotation failed; aborting controls."
+                        );
+                        cleanupAutoAimSocketUntilReleased();
+                        return;
+                    }
                     double x = 0.28 * cos((90 - angle) * 3.1415 / 180.0);
                     double y = 0.28 * sin((90 - angle) * 3.1415 / 180.0);
                     cout << "place offset: x=" << x << ", y=" << y << " right side? y/n/(t)op: ";
@@ -1453,16 +1885,46 @@ void OperationMode(){
                     goalPos[0] += x + camera_offset[0];
                     goalPos[1] += y + camera_offset[1];
                     goalPos[2] += -0.30;
-                    robot.MoveToParaBlend(goalPos, true);
+                    if(!robot.MoveToParaBlend(goalPos, true)){
+                        ShutdownRobotUntilSafe(
+                            "Auto-aim placement approach failed; aborting controls."
+                        );
+                        cleanupAutoAimSocketUntilReleased();
+                        return;
+                    }
                     
                     goalPos[2] += -0.185;
-                    robot.MoveToParaBlend(goalPos, 2000, true);
-                    robot.gripper.Open();
+                    if(!robot.MoveToParaBlend(goalPos, 2000, true)){
+                        ShutdownRobotUntilSafe(
+                            "Auto-aim placement descent failed; aborting controls."
+                        );
+                        cleanupAutoAimSocketUntilReleased();
+                        return;
+                    }
+                    if(!robot.gripper.Open()){
+                        ShutdownRobotUntilSafe(
+                            "Auto-aim placement open failed; aborting controls."
+                        );
+                        cleanupAutoAimSocketUntilReleased();
+                        return;
+                    }
                     Sleep(1500);
                     goalPos[2] += 0.185;
-                    robot.MoveToParaBlend(goalPos, true);
+                    if(!robot.MoveToParaBlend(goalPos, true)){
+                        ShutdownRobotUntilSafe(
+                            "Auto-aim placement retreat failed; aborting controls."
+                        );
+                        cleanupAutoAimSocketUntilReleased();
+                        return;
+                    }
                     copy(robot.homePos, robot.homePos+6, begin(goalPos)); // home x,y,z position
-                    robot.MoveToParaBlend(goalPos, true);
+                    if(!robot.MoveToParaBlend(goalPos, true)){
+                        ShutdownRobotUntilSafe(
+                            "Auto-aim return-home motion failed; aborting controls."
+                        );
+                        cleanupAutoAimSocketUntilReleased();
+                        return;
+                    }
                     break;
                 } else if (userInput != 'y' && userInput != 'Y') {
                     cout << "Invalid input, exiting auto aiming mode." << endl;
@@ -1470,7 +1932,7 @@ void OperationMode(){
                 }
             }
             // Close socket
-            closesocket(udpSocket);
+            cleanupAutoAimSocketUntilReleased();
         }else if(userInput == "10"){ // Drone Trajectory Mode
             cout << "Drone Trajectory Mode" << endl;
             cout << "Please Enter Length in Meters (enter q to exit): ";
@@ -1489,9 +1951,27 @@ void OperationMode(){
                         double goalPos[6] = {0};
                         copy(robot.endEffectorPos, robot.endEffectorPos + 6, goalPos);
                         goalPos[2] += length;
-                        robot.MoveToParaBlend(goalPos, 3000, true);
+                        if(!robot.MoveToParaBlend(goalPos, 3000, true)){
+                            if(!robot.IsConnected()){
+                                ShutdownRobotUntilSafe(
+                                    "Drone motion failed and left the robot unavailable."
+                                );
+                                return;
+                            }
+                            cout << "Drone motion was stopped; no further movement will run."
+                                 << endl;
+                            break;
+                        }
                         Sleep(800); // wait for ee to start moving
-                        if(!robot.MoveToParaBlend(goalPos, true)) break;
+                        if(!robot.MoveToParaBlend(goalPos, true)){
+                            if(!robot.IsConnected()){
+                                ShutdownRobotUntilSafe(
+                                    "Drone motion failed and left the robot unavailable."
+                                );
+                                return;
+                            }
+                            break;
+                        }
                         Sleep(100); // waits
                     }else{
                         cout << "Please enter a number!!!" << endl;
@@ -1515,6 +1995,12 @@ void PrintMainMenu(){
 
 void MainMenu(){
     while(true){
+        if(!robot.IsConnected()){
+            cerr << "Robot connection is no longer ready. Leaving the main menu "
+                 << "for fail-safe shutdown." << endl;
+            logger.LogError("Robot connection lost; leaving the main menu.");
+            break;
+        }
         PrintMainMenu();
         cin >> userInput;
         if(userInput == "1"){
@@ -1553,41 +2039,71 @@ int main(){
 
     
     // connect to robot
-    robot.Connect();
-    // recover last pos
-    if(fstream("lastPos.txt").good()){
-        cout << "lastPos.txt found. Recover last position of robot." << endl;
-        robot.UpdatePosFromFile("lastPos.txt", true);
-        logger.LogInfo("Reading Last Pos from pos log file");
-    }
+    const bool robotConnected = robot.Connect();
     logger.LogInfo("Connecting to robot.");
 
-    if(robot.IsConnected()){
+    if(robotConnected && robot.IsConnected()){
         cout << "All motors, all brakes and gripper connected success." << endl;
         logger.LogInfo("All motors, all brakes and gripper connected success.");
+
+        // Recovery may calibrate live controllers, so it must only run after
+        // the complete robot connection has been verified.
+        if(fstream("lastPos.txt").good()){
+            cout << "lastPos.txt found. Recover last position of robot." << endl;
+            if(!robot.UpdatePosFromFile("lastPos.txt", true)){
+                ShutdownRobotUntilSafe(
+                    "Startup position recovery failed; initialization aborted."
+                );
+                logger.CloseFile();
+                return 1;
+            }
+            logger.LogInfo("Reading Last Pos from pos log file");
+        }
         
         system("pause");
         // start main program
         MainMenu();
     }else{
         cout << "Robot Init Failed. Exiting..." << endl;
-        logger.LogError("Rail connect failed.");
+        logger.LogError("Robot initialization failed.");
+        while(!robot.Disconnect()){
+            logger.LogError(
+                "Robot initialization rollback is incomplete; "
+                "controller connection remains active."
+            );
+            cerr << "CRITICAL: Secure the hardware, then press a key to retry "
+                 << "shutdown." << endl;
+            system("pause");
+        }
+        logger.CloseFile();
+        return 1;
     }
 
-    // save last pos
-    robot.PrintEEPos();
-    robot.PrintRailOffset();
-    string robotPosPath;
-    cout << "Please Enter Robot Position File Path (Default lastPos.txt, enter 'no' to escape from saving): ";
-    getchar();
-    getline(cin, robotPosPath);
-    if(robotPosPath != "no"){
-        robot.SavePosToFile(robotPosPath  != "" ? robotPosPath : "lastPos.txt");
-        system("pause");
+    // Only a still-ready operational session may update the recovery file.
+    if(robot.IsConnected()){
+        robot.PrintEEPos();
+        robot.PrintRailOffset();
+        string robotPosPath;
+        cout << "Please Enter Robot Position File Path (Default lastPos.txt, enter 'no' to escape from saving): ";
+        getchar();
+        getline(cin, robotPosPath);
+        if(robotPosPath != "no"){
+            robot.SavePosToFile(robotPosPath  != "" ? robotPosPath : "lastPos.txt");
+            system("pause");
+        }
+    }else{
+        logger.LogError(
+            "Skipping recovery-file save because the robot is not fully connected."
+        );
     }
     
     // disconnect from robot
-    robot.Disconnect();
+    while(!robot.Disconnect()){
+        logger.LogError("Robot disconnect incomplete; controller connection remains active.");
+        cerr << "CRITICAL: Secure the hardware, then press a key to retry "
+             << "shutdown." << endl;
+        system("pause");
+    }
     logger.LogInfo("Robot Disconnected.");
     logger.CloseFile();
     cout << "Bye" << endl;

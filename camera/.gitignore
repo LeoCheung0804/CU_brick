@@ -34,3 +34,10 @@ wheels/
 *.swp
 *.swo
 .DS_Store 
+
+# YOLO model files
+*.pt
+*.yaml
+*.ts
+*.bin
+*.xml

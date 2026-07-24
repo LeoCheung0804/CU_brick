@@ -8,25 +8,27 @@ using namespace std;
 class RailController{
 private:
     TwincatADSNode motorNode;
-    int railNumber;
-    bool isOnline;
-    bool isMoveFinished;
-    int MILLIS_TO_NEXT_FRAME = 50;
-    string sendStr;
-    bool *bArry;
-    int workingMotor = 0;
-    bool isConnected;
-    bool useRail;
+    int railNumber{0};
+    bool isOnline{false};
+    int MILLIS_TO_NEXT_FRAME{50};
+    int workingMotor{0};
+    bool isConnected{false};
+    bool cleanupPending{false};
+    bool useRail{false};
+    bool IsValidRailIndex(int index) const;
+    int ToPhysicalRailIndex(int logicalIndex) const;
 public:
-    RailController(bool isOnline=false, bool useRail=false);
-    void Connect(int motorPortNumber, int railNumber);
-    void Disconnect();
-    bool IsConnected();
-    void CalibrationMotor(int index, double currentCmdPos);
-    void SelectWorkingMotor(int index);
-    void MoveSelectedMotorCmdAbsulote(double cmd);
-    void MoveMotorCmdAbsuloteById(int id, double cmd);
-    vector<int> GetMotorPosMeasured();
-    int GetMotorPosMeasuredById(int id);
+    explicit RailController(bool isOnline=false, bool useRail=false);
+    bool Connect(int motorPortNumber, int railNumber);
+    bool Disconnect();
+    bool IsConnected() const;
+    bool HasActiveResources() const;
+    bool CalibrationMotor(int index, double currentCmdPos);
+    bool SelectWorkingMotor(int index);
+    bool MoveSelectedMotorCmdAbsulote(double cmd);
+    bool MoveMotorCmdAbsuloteById(int id, double cmd);
+    bool GetMotorPosMeasured(vector<double>& result);
+    vector<double> GetMotorPosMeasured();
+    double GetMotorPosMeasuredById(int id);
 };
 #endif

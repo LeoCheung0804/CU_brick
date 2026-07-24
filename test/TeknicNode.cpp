@@ -3,7 +3,7 @@
 
 using namespace std;
 
-TeknicNode::TeknicNode(){}
+TeknicNode::TeknicNode(bool isOnline) : isOnline(isOnline){}
 
 bool TeknicNode::Connect(int nodeNumber){
     try{
@@ -91,12 +91,24 @@ bool TeknicNode::Connect(int nodeNumber){
     }
 }
 
-void TeknicNode::Disconnect(){  
-    for(int i = 0; i < nodeNumber; i++){ //Disable Nodes
-        nodeList[i]->EnableReq(false);
+bool TeknicNode::Disconnect(){
+    try{
+        for(INode* node : nodeList){ // Disable every node actually acquired.
+            if(node != nullptr) node->EnableReq(false);
+        }
+        nodeList.clear();
+        nodeNumber = 0;
+        if(myMgr != nullptr) myMgr->PortsClose(); // Close down the ports
+        return true;
+    }catch(mnErr& theErr){
+        printf(
+            "Test teardown failed: addr=%d, err=0x%08x, msg=%s\n",
+            theErr.TheAddr,
+            theErr.ErrorCode,
+            theErr.ErrorMsg
+        );
+        return false;
     }
-    nodeList.clear();
-    myMgr->PortsClose(); // Close down the ports
 }
 
 vector<INode*> TeknicNode::GetNodeList(){
@@ -104,10 +116,10 @@ vector<INode*> TeknicNode::GetNodeList(){
 }
 
 INode* TeknicNode::GetNode(int nodeIndex){
-    if(nodeIndex < nodeNumber)
-        return nodeList[nodeIndex];
-    else
+    if(nodeIndex < 0
+        || static_cast<size_t>(nodeIndex) >= nodeList.size())
         return nullptr;
+    return nodeList[static_cast<size_t>(nodeIndex)];
 }
 
 
