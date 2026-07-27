@@ -1,11 +1,12 @@
 #ifndef COMPortNode_H
 #define COMPortNode_H
 
+#include "SerialPort.h"
 #include <windows.h>
 #include <string>
 
 using namespace std;
-class COMPortNode{
+class COMPortNode : public ISerialPort {
 private:
     bool isOnline{false};
     bool isConnected{false};
@@ -17,12 +18,12 @@ private:
 public:
     explicit COMPortNode(bool isOnline=false);
 
-    bool Connect(const string& portName);
-    bool Disconnect();
-    bool IsConnected() const;
-    bool HasActiveResources() const;
+    bool Connect(const string& portName) override;
+    bool Disconnect() override;
+    bool IsConnected() const override;
+    bool HasActiveResources() const override;
 
-    string Read();
-    bool Send(const string& command);
+    string Read() override;
+    bool Send(const string& command) override;
 };
 #endif

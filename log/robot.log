@@ -12,3 +12,8 @@
 [126/7/24: 13:17:1][Info]Connecting to robot.
 [126/7/24: 13:17:1][Info]All motors, all brakes and gripper connected success.
 [126/7/24: 13:17:16][Info]Robot Disconnected.
+[126/7/27: 17:7:29][Info]Reading robot config.
+[126/7/27: 17:7:29][Info]Connecting to robot.
+[126/7/27: 17:7:29][Info]All motors, all brakes and gripper connected success.
+[126/7/27: 17:7:29][Info]Reading Last Pos from pos log file
+[126/7/27: 17:7:35][Info]Robot Disconnected.

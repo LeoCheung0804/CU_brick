@@ -1,13 +1,14 @@
 #ifndef BrakeController_H
 #define BrakeController_H
 
-#include "COMPortNode.h"
+#include "SerialPort.h"
+#include <memory>
 #include <string>
 
 using namespace std;
 class BrakeController{
 private:
-    COMPortNode node;
+    unique_ptr<ISerialPort> node;
     bool isOnline{false};
     bool useRailBrake{false};
     bool useCableBrake{false};
@@ -23,6 +24,8 @@ private:
     
 public:
     explicit BrakeController(bool isOnline=false);
+    // Injection seam for deterministic tests and alternate serial transports.
+    BrakeController(bool isOnline, unique_ptr<ISerialPort> serialPort);
 
     bool Connect(const string& portName);
     

@@ -14,18 +14,53 @@ This project is a comprehensive robot control system for cable-driven parallel r
 ### Prerequisites
 
 - Windows OS
-- Visual Studio 20xx Developer Command Prompt
+- Visual Studio 2019 or newer with the **Desktop development with C++**
+  workload (the standalone Build Tools edition is also supported)
 - Visual Studio Code
 - Teknic ClearPath Driver: https://teknic.com/downloads/
 - Required hardware connected and powered
 
 ### Build
 
-1. Open the Visual Studio Developer Command Prompt.
-2. Build the project:
-   ```sh
-   Terminal -> Run Build Task C/C++: cl.exe build active files.
-   ```
+The build script discovers Visual Studio through `vswhere`, selects the x86
+toolchain required by the bundled 32-bit vendor libraries, and derives all
+source, dependency, and output paths from the repository location. A Visual
+Studio Developer Command Prompt is not required.
+
+From a regular PowerShell terminal:
+
+```powershell
+.\tools\build.ps1 -Target Main
+```
+
+The controller executable is written to `bin\main.exe`. Other available build
+targets are `GUI`, `DeltaServer`, `LegacyTest`, and `OfflineTests`. The VS Code
+build tasks call the same script.
+
+For a Visual Studio installation that `vswhere` cannot find, pass the developer
+command script explicitly:
+
+```powershell
+.\tools\build.ps1 -Target Main -VsDevCmd 'D:\VisualStudio\Common7\Tools\VsDevCmd.bat'
+```
+
+Alternatively, set the `CU_BRICK_VSDEVCMD` environment variable to that path.
+
+### Hardware-independent tests
+
+The offline test target covers serial-controller lifecycle and failure
+propagation, brake rollback, trajectory generation, and cable kinematics. It
+uses injected fake serial ports and does not open COM ports, TwinCAT ADS,
+Teknic nodes, or network sockets.
+
+Run it from PowerShell (this delegates to the shared portable build script):
+
+```powershell
+.\test\run_offline_tests.ps1
+```
+
+Alternatively, run the VS Code task `Test: offline unit tests`. Build products
+are written under the system temporary directory rather than the repository.
 
 ### Run
 

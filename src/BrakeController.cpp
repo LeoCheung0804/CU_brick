@@ -1,11 +1,25 @@
 #include "../include/BrakeController.h"
+#include "../include/COMPortNode.h"
 #include <iostream>
+#include <stdexcept>
+#include <utility>
 #define RAIL_BRAKE_INDEX_START 0
 #define CABLE_BRAKE_INDEX_START 4
 #define RAIL_BRAKE_ALL 8
 #define CABLE_BRAKE_ALL 9
 BrakeController::BrakeController(bool isOnline)
-    : node(isOnline), isOnline(isOnline) {}
+    : BrakeController(
+        isOnline,
+        unique_ptr<ISerialPort>(new COMPortNode(isOnline))
+    ) {}
+
+BrakeController::BrakeController(
+    bool isOnline,
+    unique_ptr<ISerialPort> serialPort
+) : node(move(serialPort)), isOnline(isOnline) {
+    if(!this->node)
+        throw invalid_argument("Brake serial port cannot be null.");
+}
 
 bool BrakeController::IsValidRailBrakeIndex(int index) const {
     return index >= 0 && index < this->railBrakeNum;
@@ -25,9 +39,9 @@ bool BrakeController::Connect(const string& portName){
     this->isConnected = false;
     this->cleanupPending = false;
     if(!this->useRailBrake && !this->useCableBrake) return true;
-    if(!this->node.Connect(portName)) { 
+    if(!this->node->Connect(portName)) {
         cout << "Error: Failed to connect Brake. \n"; 
-        this->cleanupPending = this->node.HasActiveResources();
+        this->cleanupPending = this->node->HasActiveResources();
         return false;
     }
     if(this->isOnline) Sleep(2000);
@@ -39,11 +53,11 @@ bool BrakeController::Connect(const string& portName){
 
 bool BrakeController::Disconnect(){
     if(!this->HasActiveResources()) return true;
-    if(!this->node.Disconnect()){
+    if(!this->node->Disconnect()){
         cerr << "Failed to disconnect brake controller; connection remains active."
              << endl;
         this->isConnected = false;
-        this->cleanupPending = this->node.HasActiveResources();
+        this->cleanupPending = this->node->HasActiveResources();
         return false;
     }
     cout << "Brake Controller Offline." << endl;
@@ -92,7 +106,7 @@ bool BrakeController::OpenRailBrakeByIndex(int index){
     this->sendStr[3] = '0';
     this->sendStr[1] = '0' + RAIL_BRAKE_INDEX_START + index;
     // cout << "Sending Command: " << this->sendStr << " to Brakes" << endl;
-    if(!this->node.Send(this->sendStr)){
+    if(!this->node->Send(this->sendStr)){
         cerr << "Failed to open rail brake " << index << "." << endl;
         return false;
     }
@@ -111,7 +125,7 @@ bool BrakeController::CloseRailBrakeByIndex(int index){
     this->sendStr[3] = '1';
     this->sendStr[1] = '0' + RAIL_BRAKE_INDEX_START + index;
     // cout << "Sending Command: " << this->sendStr << " to Brakes" << endl;
-    if(!this->node.Send(this->sendStr)){
+    if(!this->node->Send(this->sendStr)){
         cerr << "Failed to close rail brake " << index << "." << endl;
         return false;
     }
@@ -148,7 +162,7 @@ bool BrakeController::CloseAllRailBrake(){
     this->sendStr[3] = '1';
     this->sendStr[1] = '0' + RAIL_BRAKE_ALL;
     // cout << "Sending Command: " << this->sendStr << " to Brakes" << endl;
-    if(!this->node.Send(this->sendStr)){
+    if(!this->node->Send(this->sendStr)){
         cerr << "Failed to close all rail brakes." << endl;
         return false;
     }
@@ -167,7 +181,7 @@ bool BrakeController::OpenCableBrakeByIndex(int index){
     this->sendStr[3] = '0';
     this->sendStr[1] = '0' + CABLE_BRAKE_INDEX_START + index;
     // cout << "Sending Command: " << this->sendStr << " to cable brakes" << endl;
-    if(!this->node.Send(this->sendStr)){
+    if(!this->node->Send(this->sendStr)){
         cerr << "Failed to open cable brake " << index << "." << endl;
         return false;
     }
@@ -186,7 +200,7 @@ bool BrakeController::CloseCableBrakeByIndex(int index){
     this->sendStr[3] = '1';
     this->sendStr[1] = '0' + CABLE_BRAKE_INDEX_START + index;
     // cout << "Sending Command: " << this->sendStr << " to cable brakes" << endl;
-    if(!this->node.Send(this->sendStr)){
+    if(!this->node->Send(this->sendStr)){
         cerr << "Failed to close cable brake " << index << "." << endl;
         return false;
     }
@@ -223,7 +237,7 @@ bool BrakeController::CloseAllCableBrake(){
     this->sendStr[3] = '1';
     this->sendStr[1] = '0' + CABLE_BRAKE_ALL;
     // cout << "Sending Command: " << this->sendStr << " to Brakes" << endl;
-    if(!this->node.Send(this->sendStr)){
+    if(!this->node->Send(this->sendStr)){
         cerr << "Failed to close all cable brakes." << endl;
         return false;
     }

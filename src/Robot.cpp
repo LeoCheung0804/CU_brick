@@ -1,4 +1,5 @@
 #include "../include/Robot.h"
+#include "../include/CableKinematics.h"
 #include "../tools/json.hpp"
 #include "../Dependencies/eigen-3.3.7/Eigen/Dense"
 #include "../include/TrajectoryGenerator.h"
@@ -760,54 +761,30 @@ void Robot::PrintRobotConfig()
 
 vector<double> Robot::EEPoseToCableLength(double eePos[], double railOffset[])
 { // given an EE pose, calculate the EE to pulley cable lengths
-    vector<double> result;
-    // local variables
-    Vector3d orB[8]; // vector from frame 0 origin to end effector cable outlet
-    Vector3d orA[8]; // vector from frame 0 origin to cable outlet point on rotating pulley
-    Matrix3d oe_R;   // rotation matrix from end effector to frame 0
-    Matrix3d Ra, Rb, Rc;
-    double a = eePos[3], b = eePos[4], c = eePos[5];
-
-    Ra << 1, 0, 0,
-        0, cos(a), -sin(a),
-        0, sin(a), cos(a);
-    Rb << cos(b), 0, sin(b),
-        0, 1, 0,
-        -sin(b), 0, cos(b);
-    Rc << cos(c), -sin(c), 0,
-        sin(c), cos(c), 0,
-        0, 0, 1;
-    oe_R = Ra * Rb * Rc;                           // Rotation matrix from given pose rotation
-    Vector3d endEfr(eePos[0], eePos[1], eePos[2]); // Translation of end-effector
-    for (int i = 0; i < cableMotorNum; i++)
-    {
-        ///// Calculate orB[8] vectors /////
-        orB[i] = oe_R * endOut[i] + endEfr;
-
-        ///// Calculate cable outlet point on rotating pulley, ie point A /////
-        Vector3d plNormal = frmOutUnitV[i].cross(orB[i] - frmOut[i]); // normal vector of the plane that the rotating pulley is in
-        Vector3d VecC = plNormal.cross(frmOutUnitV[i]);               // direction from fixed point towards pulley center
-        Vector3d zOffset(0, 0, 0);                                    // set a z offset for frame out for pulleys on linear rails
-        if (i < 4)
-        {
-            zOffset << 0, 0, railOffset[i];
-        }
-        Vector3d orC = VecC / VecC.norm() * pulleyRadius + frmOut[i] + zOffset; // vector from frame 0 origin to rotating pulley center
-        double triR = pulleyRadius / (orB[i] - orC).norm();                     // triangle ratio??
-        orA[i] = orC + triR * triR * (orB[i] - orC) - triR * sqrt(1 - triR * triR) * ((plNormal / plNormal.norm()).cross(orB[i] - orC));
-
-        ///// Calculate arc length /////
-        Vector3d UVecCF = -VecC / VecC.norm();                    // unit vector of CF
-        Vector3d UVecCA = (orA[i] - orC) / (orA[i] - orC).norm(); // unit vector of CA
-        double l_arc = pulleyRadius * acos(UVecCF.dot(UVecCA));
-
-        ///// Sum the total cable length /////
-        result.push_back(i < 4 ? l_arc + (orA[i] - orB[i]).norm() - (railOffset[i] - this->startRailOffset[i]) : l_arc + (orA[i] - orB[i]).norm()); // WHY minus railOffset again?
-        // result.push_back(i < 4 ? l_arc + (orA[i] - orB[i]).norm() : l_arc + (orA[i] - orB[i]).norm());
-        // lengths[i] = i < 4 ? l_arc + (orA[i] - orB[i]).norm() - railOffset[i] : l_arc + (orA[i] - orB[i]).norm(); // Need to subtract the rail offset for the bottom 4 motors
+    cu_brick::CableKinematicsConfig config;
+    config.cableCount = static_cast<size_t>(this->cableMotorNum);
+    config.pulleyRadius = this->pulleyRadius;
+    for(size_t index = 0; index < config.cableCount; index++){
+        config.frameAttachments[index] = this->frmOut[index];
+        config.endEffectorAttachments[index] = this->endOut[index];
+        config.pulleyAxes[index] = this->frmOutUnitV[index];
     }
-    // copy(railOffset, railOffset+4, lengths+cableMotorNum); // assign array elements after motor numbers as rail lengths // rail_offset default size of 4
-    return result;
+    for(size_t index = 0; index < cu_brick::kMaximumRailCount; index++)
+        config.startingRailOffsets[index] = this->startRailOffset[index];
+
+    array<double, 6> pose;
+    copy(eePos, eePos + pose.size(), pose.begin());
+    array<double, cu_brick::kMaximumRailCount> currentRailOffsets;
+    copy(
+        railOffset,
+        railOffset + currentRailOffsets.size(),
+        currentRailOffsets.begin()
+    );
+    return cu_brick::ComputeCableLengths(
+        config,
+        pose,
+        currentRailOffsets
+    );
 }
 
 vector<double> Robot::EEPoseToCableLength(double eePos[])

@@ -1,8 +1,26 @@
 #include "../include/GripperController.h"
+#include "../include/COMPortNode.h"
 #include <iostream>
+#include <stdexcept>
+#include <utility>
 
 GripperController::GripperController(bool isOnline, bool useGripper)
-    : node(isOnline), isOnline(isOnline), useGripper(useGripper) {}
+    : GripperController(
+        isOnline,
+        useGripper,
+        unique_ptr<ISerialPort>(new COMPortNode(isOnline))
+    ) {}
+
+GripperController::GripperController(
+    bool isOnline,
+    bool useGripper,
+    unique_ptr<ISerialPort> serialPort
+) : node(move(serialPort)),
+    isOnline(isOnline),
+    useGripper(useGripper) {
+    if(!this->node)
+        throw invalid_argument("Gripper serial port cannot be null.");
+}
 
 bool GripperController::Connect(const string& portName){
     if(this->HasActiveResources()){
@@ -14,9 +32,9 @@ bool GripperController::Connect(const string& portName){
     this->isConnected = false;
     this->cleanupPending = false;
     if(!this->useGripper) return true;
-    if(!this->node.Connect(portName)) { 
+    if(!this->node->Connect(portName)) {
         cout << "Error: Failed to connect gripper. \n"; 
-        this->cleanupPending = this->node.HasActiveResources();
+        this->cleanupPending = this->node->HasActiveResources();
         return false;
     }
     this->portName = portName;
@@ -28,10 +46,10 @@ bool GripperController::Connect(const string& portName){
 
 bool GripperController::Disconnect(){
     if(!this->HasActiveResources()) return true;
-    if(!this->node.Disconnect()){
+    if(!this->node->Disconnect()){
         cerr << "Failed to disconnect gripper; connection remains active." << endl;
         this->isConnected = false;
-        this->cleanupPending = this->node.HasActiveResources();
+        this->cleanupPending = this->node->HasActiveResources();
         return false;
     }
     cout << "Gripper Controller Offline." << endl;
@@ -51,13 +69,13 @@ bool GripperController::Open(){
     if(!this->isConnected) return false;
     this->sendStr = "(o,    )";
     // cout << "Sending Command: " << sendStr << " to gripper" << endl;
-    bool sent = node.Send(this->sendStr);
-    sent = node.Send(this->sendStr) && sent;
-    sent = node.Send(this->sendStr) && sent;
+    bool sent = node->Send(this->sendStr);
+    sent = node->Send(this->sendStr) && sent;
+    sent = node->Send(this->sendStr) && sent;
     if(!sent){
         cerr << "Failed to send gripper open command." << endl;
         this->isConnected = false;
-        this->cleanupPending = this->node.HasActiveResources();
+        this->cleanupPending = this->node->HasActiveResources();
         return false;
     }
     cout << "Gripper Opened. " << endl;
@@ -69,13 +87,13 @@ bool GripperController::Close(){
     if(!this->isConnected) return false;
     this->sendStr = "(c,    )";
     // cout << "Sending Command: " << sendStr << " to gripper" << endl;
-    bool sent = node.Send(this->sendStr);
-    sent = node.Send(this->sendStr) && sent;
-    sent = node.Send(this->sendStr) && sent;
+    bool sent = node->Send(this->sendStr);
+    sent = node->Send(this->sendStr) && sent;
+    sent = node->Send(this->sendStr) && sent;
     if(!sent){
         cerr << "Failed to send gripper close command." << endl;
         this->isConnected = false;
-        this->cleanupPending = this->node.HasActiveResources();
+        this->cleanupPending = this->node->HasActiveResources();
         return false;
     }
     cout << "Gripper Closed. " << endl;
@@ -86,13 +104,13 @@ bool GripperController::Release(){
     if(!this->isConnected) return false;
     this->sendStr = "(r,    )";
     // cout << "Sending Command: " << sendStr << " to gripper" << endl;
-    bool sent = node.Send(this->sendStr);
-    sent = node.Send(this->sendStr) && sent;
-    sent = node.Send(this->sendStr) && sent;
+    bool sent = node->Send(this->sendStr);
+    sent = node->Send(this->sendStr) && sent;
+    sent = node->Send(this->sendStr) && sent;
     if(!sent){
         cerr << "Failed to send gripper release command." << endl;
         this->isConnected = false;
-        this->cleanupPending = this->node.HasActiveResources();
+        this->cleanupPending = this->node->HasActiveResources();
         return false;
     }
     cout << "Gripper Released. " << endl;
@@ -113,13 +131,13 @@ bool GripperController::Rotate(int angle){
     }
     this->sendStr += ")";
     // cout << "Sending Command: " << this->sendStr << " to gripper" << endl;
-    bool sent = node.Send(this->sendStr);
-    sent = node.Send(this->sendStr) && sent;
-    sent = node.Send(this->sendStr) && sent;
+    bool sent = node->Send(this->sendStr);
+    sent = node->Send(this->sendStr) && sent;
+    sent = node->Send(this->sendStr) && sent;
     if(!sent){
         cerr << "Failed to send gripper rotation command." << endl;
         this->isConnected = false;
-        this->cleanupPending = this->node.HasActiveResources();
+        this->cleanupPending = this->node->HasActiveResources();
         return false;
     }
     cout << "Gripper Rotated to: " << angle << endl;
@@ -178,7 +196,7 @@ void GripperController::Calibrate(){
 void GripperController::Reset(){
     if(!this->useGripper || !this->isConnected) return;
     this->sendStr = "(h,  0 )";
-    if(!node.Send(this->sendStr)){
+    if(!node->Send(this->sendStr)){
         cerr << "Failed to send gripper reset command." << endl;
         return;
     }
@@ -195,10 +213,10 @@ bool GripperController::Reconnect(){
     }
     if(this->isOnline) Sleep(1000);
     cout << "Reconnecting Gripper Controller..." << endl;
-    if(!this->node.Connect(this->portName)) {
+    if(!this->node->Connect(this->portName)) {
         cout << "Error: Failed to reconnect gripper. \n"; 
         this->isConnected = false;
-        this->cleanupPending = this->node.HasActiveResources();
+        this->cleanupPending = this->node->HasActiveResources();
         return false;
     }
     this->isConnected = true;

@@ -1,14 +1,15 @@
 #ifndef GripperController_H
 #define GripperController_H
 
-#include "COMPortNode.h"
+#include "SerialPort.h"
+#include <memory>
 #include <string>
 #include <map>
 
 using namespace std;
 class GripperController{
 private:
-    COMPortNode node;
+    unique_ptr<ISerialPort> node;
     bool isOnline{false};
     bool useGripper{false};
     int MILLIS_TO_NEXT_FRAME{50};
@@ -22,6 +23,12 @@ private:
     float endAngleTmp{43.0F};
 public:
     explicit GripperController(bool isOnline=false, bool useGripper=false);
+    // Injection seam for deterministic tests and alternate serial transports.
+    GripperController(
+        bool isOnline,
+        bool useGripper,
+        unique_ptr<ISerialPort> serialPort
+    );
 
     bool Connect(const string& portName);
     bool Disconnect();

@@ -93,5 +93,5 @@
         "stack": "cpp",
         "unordered_set": "cpp"
     },
-    "C_Cpp.errorSquiggles": "Disabled",
-"cmake.sourceDirectory": "C:/Users/leoch/Documents/Dev/YES_teknicSys/ver_2/Dependencies/eigen-3.3.7/doc/special_examples"}
+    "C_Cpp.errorSquiggles": "Disabled"
+}
