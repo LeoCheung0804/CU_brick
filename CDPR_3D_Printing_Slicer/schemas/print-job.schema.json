@@ -1,0 +1,412 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:cdpr:printing:print-job:1",
+  "title": "CDPR planning print job, version 1",
+  "description": "Planning interchange only. Structural validity never authorizes hardware; semantic validation is also required.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "job_id", "stage", "source", "units", "model_identity", "frames", "operations", "validation"],
+  "properties": {
+    "schema_version": { "type": "integer", "const": 1 },
+    "job_id": { "$ref": "#/$defs/identifier" },
+    "stage": { "enum": ["imported", "transformed", "geometrically_checked", "timed", "simulated"] },
+    "source": { "$ref": "#/$defs/source_info" },
+    "units": { "$ref": "#/$defs/units" },
+    "model_identity": { "anyOf": [{ "type": "null" }, { "$ref": "#/$defs/model_identity" }] },
+    "frames": { "$ref": "#/$defs/frame_registration" },
+    "operations": { "type": "array", "minItems": 2, "maxItems": 1000000, "items": { "$ref": "#/$defs/operation" } },
+    "validation": { "$ref": "#/$defs/validation_report" }
+  },
+  "allOf": [
+    {
+      "if": { "properties": { "stage": { "enum": ["transformed", "geometrically_checked", "timed", "simulated"] } } },
+      "then": {
+        "properties": {
+          "model_identity": { "$ref": "#/$defs/model_identity" },
+          "frames": {
+            "properties": {
+              "status": { "const": "verified" },
+              "world_from_bed": { "$ref": "#/$defs/rigid_transform" },
+              "end_effector_from_nozzle": { "$ref": "#/$defs/rigid_transform" }
+            }
+          },
+          "operations": {
+            "items": {
+              "if": { "properties": { "kind": { "const": "motion" } } },
+              "then": { "properties": { "motion": { "properties": { "end_effector": { "$ref": "#/$defs/motion_geometry" } } } } }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": { "properties": { "stage": { "enum": ["timed", "simulated"] } } },
+      "then": {
+        "properties": {
+          "operations": {
+            "items": {
+              "properties": { "timing": { "$ref": "#/$defs/operation_timing" } },
+              "allOf": [
+                {
+                  "if": { "properties": { "kind": { "const": "motion" } } },
+                  "then": {
+                    "properties": {
+                      "timing": {
+                        "allOf": [
+                          { "$ref": "#/$defs/operation_timing" },
+                          { "properties": { "interpolation": { "const": "quintic_progress_v1" }, "duration_s": { "exclusiveMinimum": 0 }, "profile": { "minItems": 2 } } }
+                        ]
+                      }
+                    }
+                  }
+                },
+                {
+                  "if": { "properties": { "kind": { "const": "wait_temperature" } } },
+                  "then": {
+                    "properties": {
+                      "temperature": {
+                        "properties": {
+                          "tolerance_deg_c": { "type": "number", "exclusiveMinimum": 0 },
+                          "timeout_s": { "type": "number", "exclusiveMinimum": 0 }
+                        }
+                      }
+                    }
+                  }
+                },
+                {
+                  "if": { "properties": { "kind": { "enum": ["dwell", "set_temperature", "wait_temperature", "set_fan", "barrier", "end_job"] } } },
+                  "then": { "properties": { "timing": { "properties": { "interpolation": { "const": "event_v1" }, "profile": { "maxItems": 0 } } } } }
+                }
+              ]
+            }
+          }
+        }
+      }
+    }
+  ],
+  "$defs": {
+    "identifier": { "type": "string", "minLength": 1, "maxLength": 128 },
+    "frame_id": { "type": "string", "minLength": 1, "maxLength": 128, "pattern": "^[A-Za-z][A-Za-z0-9_.-]*$" },
+    "index": { "type": "integer", "minimum": 0, "maximum": 9007199254740991 },
+    "sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+    "nullable_positive": { "anyOf": [{ "type": "null" }, { "type": "number", "exclusiveMinimum": 0 }] },
+    "vector3": { "type": "array", "minItems": 3, "maxItems": 3, "items": { "type": "number" } },
+    "quaternion": {
+      "type": "object",
+      "description": "A unit quaternion; norm and finite-value checks require semantic validation.",
+      "additionalProperties": false,
+      "required": ["x", "y", "z", "w"],
+      "properties": {
+        "x": { "type": "number", "minimum": -1, "maximum": 1 },
+        "y": { "type": "number", "minimum": -1, "maximum": 1 },
+        "z": { "type": "number", "minimum": -1, "maximum": 1 },
+        "w": { "type": "number", "minimum": -1, "maximum": 1 }
+      }
+    },
+    "pose": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["position_m", "orientation_xyzw"],
+      "properties": {
+        "position_m": { "$ref": "#/$defs/vector3" },
+        "orientation_xyzw": { "$ref": "#/$defs/quaternion" }
+      }
+    },
+    "rigid_transform": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["translation_m", "rotation_xyzw"],
+      "properties": {
+        "translation_m": { "$ref": "#/$defs/vector3" },
+        "rotation_xyzw": { "$ref": "#/$defs/quaternion" }
+      }
+    },
+    "source_location": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["first_line", "last_line", "synthetic", "command", "layer_index"],
+      "properties": {
+        "first_line": { "$ref": "#/$defs/index" },
+        "last_line": { "$ref": "#/$defs/index" },
+        "synthetic": { "type": "boolean" },
+        "command": { "type": "string", "maxLength": 4096 },
+        "layer_index": { "anyOf": [{ "type": "null" }, { "$ref": "#/$defs/index" }] }
+      },
+      "allOf": [
+        {
+          "if": { "properties": { "synthetic": { "const": true } } },
+          "then": { "properties": { "first_line": { "const": 0 }, "last_line": { "const": 0 } } },
+          "else": { "properties": { "first_line": { "minimum": 1 }, "last_line": { "minimum": 1 } } }
+        }
+      ]
+    },
+    "diagnostic": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["severity", "code", "message", "operation_id", "source"],
+      "properties": {
+        "severity": { "enum": ["info", "warning", "error", "critical"] },
+        "code": {
+          "enum": ["metadata", "state_change", "no_op", "not_implemented", "malformed_input", "unsupported_command", "undefined_modal_state", "invalid_number", "invalid_configuration", "invalid_transform", "invalid_geometry", "outside_workspace", "limit_exceeded", "infeasible_tension", "missing_model_data", "identity_mismatch", "invalid_timing", "stale_feedback", "capability_unavailable", "queue_fault", "communication_fault", "thermal_fault", "execution_fault"]
+        },
+        "message": { "type": "string", "minLength": 1, "maxLength": 4096 },
+        "operation_id": { "anyOf": [{ "type": "null" }, { "$ref": "#/$defs/index" }] },
+        "source": { "anyOf": [{ "type": "null" }, { "$ref": "#/$defs/source_location" }] }
+      }
+    },
+    "source_info": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["file_name", "sha256", "dialect_id", "producer", "profile_sha256"],
+      "properties": {
+        "file_name": { "type": "string", "minLength": 1, "maxLength": 1024 },
+        "sha256": { "$ref": "#/$defs/sha256" },
+        "dialect_id": { "const": "marlin_restricted_v1" },
+        "producer": {
+          "anyOf": [
+            { "type": "null" },
+            {
+              "type": "object", "additionalProperties": false,
+              "required": ["name", "version"],
+              "properties": { "name": { "$ref": "#/$defs/identifier" }, "version": { "$ref": "#/$defs/identifier" } }
+            }
+          ]
+        },
+        "profile_sha256": { "anyOf": [{ "type": "null" }, { "$ref": "#/$defs/sha256" }] }
+      }
+    },
+    "model_identity": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["robot_config_sha256", "calibration_sha256", "rail_state_sha256", "motion_limits_sha256"],
+      "properties": {
+        "robot_config_sha256": { "$ref": "#/$defs/sha256" },
+        "calibration_sha256": { "$ref": "#/$defs/sha256" },
+        "rail_state_sha256": { "$ref": "#/$defs/sha256" },
+        "motion_limits_sha256": { "$ref": "#/$defs/sha256" }
+      }
+    },
+    "units": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["position", "orientation", "filament", "time", "temperature"],
+      "properties": {
+        "position": { "const": "m" },
+        "orientation": { "const": "quaternion_xyzw" },
+        "filament": { "const": "mm" },
+        "time": { "const": "s" },
+        "temperature": { "const": "degC" }
+      }
+    },
+    "frame_registration": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["world_frame_id", "bed_frame_id", "end_effector_frame_id", "nozzle_frame_id", "world_from_bed", "end_effector_from_nozzle", "status"],
+      "properties": {
+        "world_frame_id": { "$ref": "#/$defs/frame_id" },
+        "bed_frame_id": { "$ref": "#/$defs/frame_id" },
+        "end_effector_frame_id": { "$ref": "#/$defs/frame_id" },
+        "nozzle_frame_id": { "$ref": "#/$defs/frame_id" },
+        "world_from_bed": { "anyOf": [{ "type": "null" }, { "$ref": "#/$defs/rigid_transform" }] },
+        "end_effector_from_nozzle": { "anyOf": [{ "type": "null" }, { "$ref": "#/$defs/rigid_transform" }] },
+        "status": { "enum": ["unverified", "verified"] }
+      }
+    },
+    "motion_geometry": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["frame_id", "start", "end"],
+      "properties": {
+        "frame_id": { "$ref": "#/$defs/frame_id" },
+        "start": { "$ref": "#/$defs/pose" },
+        "end": { "$ref": "#/$defs/pose" }
+      }
+    },
+    "extrusion_span": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["start_fraction", "end_fraction", "purpose", "delta_filament_mm"],
+      "properties": {
+        "start_fraction": { "type": "number", "minimum": 0, "exclusiveMaximum": 1 },
+        "end_fraction": { "type": "number", "exclusiveMinimum": 0, "maximum": 1 },
+        "purpose": { "enum": ["none", "deposit", "retract", "recover", "prime"] },
+        "delta_filament_mm": { "type": "number" }
+      },
+      "oneOf": [
+        { "properties": { "purpose": { "const": "none" }, "delta_filament_mm": { "const": 0 } } },
+        { "properties": { "purpose": { "const": "retract" }, "delta_filament_mm": { "exclusiveMaximum": 0 } } },
+        { "properties": { "purpose": { "enum": ["deposit", "recover", "prime"] }, "delta_filament_mm": { "exclusiveMinimum": 0 } } }
+      ]
+    },
+    "motion_operation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["intent", "nozzle", "end_effector", "tool_id", "delta_filament_mm", "logical_e_start_mm", "logical_e_end_mm", "filament_position_start_mm", "filament_position_end_mm", "path_feedrate_m_per_s", "filament_feedrate_mm_per_s", "extrusion_spans"],
+      "properties": {
+        "intent": { "enum": ["travel", "deposit", "retract", "recover", "prime", "mixed"] },
+        "nozzle": { "$ref": "#/$defs/motion_geometry" },
+        "end_effector": { "anyOf": [{ "type": "null" }, { "$ref": "#/$defs/motion_geometry" }] },
+        "tool_id": { "type": "integer", "const": 0 },
+        "delta_filament_mm": { "type": "number" },
+        "logical_e_start_mm": { "type": "number" },
+        "logical_e_end_mm": { "type": "number" },
+        "filament_position_start_mm": { "type": "number" },
+        "filament_position_end_mm": { "type": "number" },
+        "path_feedrate_m_per_s": { "$ref": "#/$defs/nullable_positive" },
+        "filament_feedrate_mm_per_s": { "$ref": "#/$defs/nullable_positive" },
+        "extrusion_spans": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/extrusion_span" } }
+      }
+    },
+    "profile_knot": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["offset_s", "progress", "path_speed_m_per_s", "filament_offset_mm", "filament_rate_mm_per_s"],
+      "properties": {
+        "offset_s": { "type": "number", "minimum": 0 },
+        "progress": { "type": "number", "minimum": 0, "maximum": 1 },
+        "path_speed_m_per_s": { "anyOf": [{ "type": "null" }, { "type": "number", "minimum": 0 }] },
+        "filament_offset_mm": { "type": "number" },
+        "filament_rate_mm_per_s": { "type": "number" }
+      }
+    },
+    "operation_timing": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["interpolation", "epoch_id", "start_s", "duration_s", "profile"],
+      "properties": {
+        "interpolation": { "enum": ["quintic_progress_v1", "event_v1"] },
+        "epoch_id": { "$ref": "#/$defs/index" },
+        "start_s": { "type": "number", "minimum": 0 },
+        "duration_s": { "type": "number", "minimum": 0 },
+        "profile": { "type": "array", "maxItems": 50000, "items": { "$ref": "#/$defs/profile_knot" } }
+      }
+    },
+    "dwell_operation": {
+      "type": "object", "additionalProperties": false,
+      "required": ["duration_s"],
+      "properties": { "duration_s": { "type": "number", "exclusiveMinimum": 0 } }
+    },
+    "temperature_operation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["heater", "channel", "target_deg_c", "wait_mode", "tolerance_deg_c", "timeout_s"],
+      "properties": {
+        "heater": { "enum": ["hotend", "bed"] },
+        "channel": { "type": "integer", "const": 0 },
+        "target_deg_c": { "type": "number", "minimum": 0 },
+        "wait_mode": { "enum": [null, "heat_only", "heat_or_cool"] },
+        "tolerance_deg_c": { "$ref": "#/$defs/nullable_positive" },
+        "timeout_s": { "$ref": "#/$defs/nullable_positive" }
+      }
+    },
+    "fan_operation": {
+      "type": "object", "additionalProperties": false,
+      "required": ["channel", "fraction"],
+      "properties": {
+        "channel": { "type": "integer", "const": 0 },
+        "fraction": { "type": "number", "minimum": 0, "maximum": 1 }
+      }
+    },
+    "barrier_operation": {
+      "type": "object", "additionalProperties": false,
+      "required": ["reason"],
+      "properties": { "reason": { "enum": ["explicit_sync", "pause_boundary", "job_end"] } }
+    },
+    "operation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "kind", "source", "timing", "motion", "dwell", "temperature", "fan", "barrier"],
+      "properties": {
+        "id": { "$ref": "#/$defs/index" },
+        "kind": { "enum": ["motion", "dwell", "set_temperature", "wait_temperature", "set_fan", "barrier", "end_job"] },
+        "source": { "$ref": "#/$defs/source_location" },
+        "timing": { "anyOf": [{ "type": "null" }, { "$ref": "#/$defs/operation_timing" }] },
+        "motion": { "anyOf": [{ "type": "null" }, { "$ref": "#/$defs/motion_operation" }] },
+        "dwell": { "anyOf": [{ "type": "null" }, { "$ref": "#/$defs/dwell_operation" }] },
+        "temperature": { "anyOf": [{ "type": "null" }, { "$ref": "#/$defs/temperature_operation" }] },
+        "fan": { "anyOf": [{ "type": "null" }, { "$ref": "#/$defs/fan_operation" }] },
+        "barrier": { "anyOf": [{ "type": "null" }, { "$ref": "#/$defs/barrier_operation" }] }
+      },
+      "oneOf": [
+        {
+          "properties": {
+            "kind": { "const": "motion" },
+            "motion": { "$ref": "#/$defs/motion_operation" },
+            "dwell": { "type": "null" }, "temperature": { "type": "null" }, "fan": { "type": "null" }, "barrier": { "type": "null" }
+          }
+        },
+        {
+          "properties": {
+            "kind": { "const": "dwell" },
+            "dwell": { "$ref": "#/$defs/dwell_operation" },
+            "motion": { "type": "null" }, "temperature": { "type": "null" }, "fan": { "type": "null" }, "barrier": { "type": "null" }
+          }
+        },
+        {
+          "properties": {
+            "kind": { "const": "set_temperature" },
+            "temperature": {
+              "allOf": [
+                { "$ref": "#/$defs/temperature_operation" },
+                { "properties": { "wait_mode": { "type": "null" }, "tolerance_deg_c": { "type": "null" }, "timeout_s": { "type": "null" } } }
+              ]
+            },
+            "motion": { "type": "null" }, "dwell": { "type": "null" }, "fan": { "type": "null" }, "barrier": { "type": "null" }
+          }
+        },
+        {
+          "properties": {
+            "kind": { "const": "wait_temperature" },
+            "temperature": {
+              "allOf": [
+                { "$ref": "#/$defs/temperature_operation" },
+                { "properties": { "wait_mode": { "enum": ["heat_only", "heat_or_cool"] } } }
+              ]
+            },
+            "motion": { "type": "null" }, "dwell": { "type": "null" }, "fan": { "type": "null" }, "barrier": { "type": "null" }
+          }
+        },
+        {
+          "properties": {
+            "kind": { "const": "set_fan" },
+            "fan": { "$ref": "#/$defs/fan_operation" },
+            "motion": { "type": "null" }, "dwell": { "type": "null" }, "temperature": { "type": "null" }, "barrier": { "type": "null" }
+          }
+        },
+        {
+          "properties": {
+            "kind": { "const": "barrier" },
+            "barrier": { "$ref": "#/$defs/barrier_operation" },
+            "motion": { "type": "null" }, "dwell": { "type": "null" }, "temperature": { "type": "null" }, "fan": { "type": "null" }
+          }
+        },
+        {
+          "properties": {
+            "kind": { "const": "end_job" },
+            "motion": { "type": "null" }, "dwell": { "type": "null" }, "temperature": { "type": "null" }, "fan": { "type": "null" }, "barrier": { "type": "null" }
+          }
+        }
+      ]
+    },
+    "validation_check": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "status", "diagnostics"],
+      "properties": {
+        "kind": { "enum": ["syntax", "modal_state", "coordinate_transform", "geometry", "workspace", "orientation", "motor_count", "cable_speed", "cable_acceleration", "collision", "singularity", "tension", "execution_timing", "feedback", "thermal", "extrusion_sync", "stop_interlocks"] },
+        "status": { "enum": ["not_evaluated", "passed", "failed"] },
+        "diagnostics": { "type": "array", "items": { "$ref": "#/$defs/diagnostic" } }
+      }
+    },
+    "validation_report": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["checks", "diagnostics", "hardware_ready"],
+      "properties": {
+        "checks": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/validation_check" } },
+        "diagnostics": { "type": "array", "items": { "$ref": "#/$defs/diagnostic" } },
+        "hardware_ready": { "const": false }
+      }
+    }
+  }
+}

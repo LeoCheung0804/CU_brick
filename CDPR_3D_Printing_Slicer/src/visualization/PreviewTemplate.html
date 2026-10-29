@@ -1,0 +1,205 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; connect-src 'none'; base-uri 'none'; form-action 'none'">
+<title>CDPR 3D simulator</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#f2f5f4;color:#18332e;font:14px/1.5 system-ui,Segoe UI,sans-serif}
+main{max-width:1560px;margin:auto;padding:26px 30px}h1{font-size:28px;letter-spacing:-.7px;line-height:1.2;margin:4px 0 8px}h2{font-size:15px;margin:0 0 10px}
+p{margin:0 0 12px}.eyebrow{font-size:11px;letter-spacing:1.5px;font-weight:700;color:#547269}.muted{color:#62776f}.mono{font-family:ui-monospace,Consolas,monospace;font-variant-numeric:tabular-nums}
+header{display:flex;justify-content:space-between;gap:20px;align-items:center}#summary{overflow-wrap:anywhere;max-width:960px;font-size:12px;margin:0}.badge{border:1px solid #c5d9d1;background:#e5f0eb;padding:6px 11px;border-radius:30px;font-size:11px;white-space:nowrap}
+.notice{border-left:3px solid #d3a04b;background:#fff7e7;padding:10px 14px;margin:18px 0;font-size:12px;color:#6a542e}.notice strong{display:block;color:#664c23}
+.layout{display:grid;grid-template-columns:minmax(0,1fr) 298px;gap:18px;align-items:start}.card{background:#fff;border:1px solid #d9e4df;border-radius:12px;min-width:0;overflow:hidden}.sidebar{padding:18px}.toolbar{display:flex;justify-content:space-between;align-items:end;gap:12px;padding:15px 18px;flex-wrap:wrap;border-bottom:1px solid #e4ebe7}.controls{display:flex;gap:12px;flex-wrap:wrap;align-items:end}
+label{display:block;font-size:11px;font-weight:600;color:#4d685f}select,button{font:inherit;color:inherit;background:#fff;border:1px solid #cbd9d2;border-radius:6px;padding:7px 10px;min-height:34px}select{display:block;margin-top:4px;font-size:12px;max-width:100%}button{cursor:pointer;font-size:12px;font-weight:600}button:disabled{opacity:.45;cursor:default}button:focus-visible,select:focus-visible,input:focus-visible,canvas:focus-visible{outline:2px solid #1a8d76;outline-offset:3px}button.primary{background:#147865;border-color:#147865;color:white;min-width:94px}.buttons{display:flex;gap:7px;flex-wrap:wrap}
+.viewport{position:relative;background:#f7faf8}canvas{display:block;width:100%;height:550px;touch-action:none;cursor:grab}canvas:active{cursor:grabbing}.scene-label{position:absolute;top:16px;left:18px;pointer-events:none}.scene-label strong{display:block;font-size:12px}.scene-label span{font-size:11px;color:#6c8076}.scene-bottom{position:absolute;bottom:12px;left:18px;right:18px;display:flex;justify-content:space-between;gap:10px;pointer-events:none;font-size:10px;color:#627b6e}.scene-tag{background:#ffffffdb;border:1px solid #d5e4dc;border-radius:5px;padding:4px 8px}.legend{display:flex;gap:12px;flex-wrap:wrap;padding:10px 18px;border-top:1px solid #e4ebe7;font-size:10px;color:#62776f}.legend span:before{content:'';display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--c);margin-right:5px}
+.playback{padding:15px 18px;border-top:1px solid #e4ebe7}.playrow{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}.rate{display:flex;align-items:center;gap:6px}.rate select{margin:0}.time{font-size:11px;color:#57746a}input[type=range]{width:100%;accent-color:#187e6a;margin:10px 0 0;min-height:24px}.sliders{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:12px}.caption{font-size:11px;color:#6b7d74;margin:9px 0 0;min-height:17px}.readouts{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));border-top:1px solid #e4ebe7}.metric{padding:12px 18px;border-right:1px solid #e4ebe7}.metric:last-child{border:0}.metric span{display:block;font-size:10px;color:#71877d;margin-bottom:3px}.metric strong{font-size:12px;font-weight:600;overflow-wrap:anywhere}
+.section{padding-top:17px;margin-top:17px;border-top:1px solid #e5ece8}.cables{display:grid;grid-template-columns:1fr 1fr;gap:4px 16px;margin:12px 0}.cable{display:flex;justify-content:space-between;gap:6px;font-size:11px;font-variant-numeric:tabular-nums}.cable b{font-weight:500;color:#7b8f85}.cable i{font-style:normal}.cable i:before{content:'';display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--c);margin-right:6px}.small{font-size:11px;color:#6b8076}ul{padding:0;margin:0;list-style:none}#checks li{display:flex;justify-content:space-between;gap:8px;border-bottom:1px solid #edf2ee;font-size:10px;padding:5px 0}.passed{color:#14745a}.not_evaluated{color:#9b721f}.failed{color:#ae3b3b}details summary{cursor:pointer;font-size:12px;font-weight:600}pre{font:11px/1.6 ui-monospace,Consolas,monospace;white-space:pre-wrap;overflow-wrap:anywhere;background:#f4f7f5;padding:12px;border-radius:6px;margin:12px 0 0}.source{padding:14px 18px;border-top:1px solid #e4ebe7}.toggle{display:flex;align-items:center;gap:6px;min-height:34px}.toggle input{accent-color:#187e6a;margin:0}
+@media(hover:hover) and (pointer:fine){button:not(:disabled):hover{border-color:#70a18f;filter:brightness(.98)}}
+@media(max-width:960px){main{padding:20px}.layout{grid-template-columns:1fr}.sidebar{display:grid;grid-template-columns:1fr 1fr;gap:20px}.sidebar .section{margin:0;padding:0;border:0}.sidebar .section:last-child{grid-column:1/-1}canvas{height:500px}}
+@media(max-width:540px){main{padding:14px}header{align-items:start}h1{font-size:24px}.badge{font-size:9px;padding:5px 8px}.eyebrow{font-size:9px}.toolbar{padding:12px}.toolbar .controls{gap:8px}.toolbar select{font-size:11px;padding:7px}.viewport canvas{height:420px}.scene-bottom{font-size:9px;left:12px;right:12px;align-items:end}.scene-label{left:12px}.playback{padding:13px 12px}.sliders{grid-template-columns:1fr;gap:8px}.metric{padding:10px}.metric strong{font-size:10px}.readouts{grid-template-columns:1fr 1fr}.metric:last-child{grid-column:1/-1;border-top:1px solid #e4ebe7}.sidebar{display:block}.sidebar .section{margin-top:17px;padding-top:17px;border-top:1px solid #e5ece8}.notice{font-size:11px}.scene-tag{padding:3px 5px}.legend{gap:10px;padding:9px 12px}}
+@media(prefers-reduced-motion:reduce){*{scroll-behavior:auto}}
+#mechanicsContacts{white-space:pre-line}
+</style></head><body><main>
+<header><div><div class="eyebrow">CABLE-DRIVEN PARALLEL ROBOT</div><h1>CDPR motion simulator</h1><p id="summary" class="muted mono"></p></div><span class="badge">OFFLINE PREVIEW</span></header>
+<div class="notice"><strong>Planning artifact · hardware_ready=false</strong><span id="noticeText">Commanded kinematic playback. Collision, cable tension, robot singularity, physical feedback, thermal protection and execution are not verified. Example profiles use synthetic geometry.</span></div>
+<div class="layout"><section class="card">
+<div class="toolbar"><div class="controls"><label>View<select id="plane"><option value="3d">3D perspective</option><option value="01">XY · top</option><option value="02">XZ · front</option><option value="12">YZ · side</option></select></label><label>Coordinates<select id="frame"><option value="nozzle">Nozzle / print bed</option><option id="ee" value="end_effector">End effector / world</option></select></label><label>Inspect layer<select id="layer"><option value="all">All layers</option></select></label></div>
+<div class="buttons"><button id="fitRobot" type="button">Fit robot</button><button id="fitPath" type="button">Fit path</button><button id="homeCamera" type="button" title="Reset the camera">Reset view</button></div></div>
+<div class="viewport"><div class="scene-label"><strong id="sceneTitle">3D toolpath</strong><span id="sceneSubtitle"></span></div>
+<canvas id="plot" tabindex="0" role="img" aria-label="Interactive 3D CDPR and commanded toolpath" aria-describedby="cameraHelp"></canvas>
+<div class="scene-bottom"><span id="cameraHelp">Drag to orbit · wheel / pinch to zoom<br>Shift-drag to pan · arrow keys to orbit</span><span class="scene-tag" id="sceneScale"></span></div></div>
+<div class="legend"><span style="--c:#687e8b">Frame envelope</span><span style="--c:#578cc0">Cables 1–4</span><span style="--c:#bd873d">Cables 5–8</span><span style="--c:#167f68">Deposit</span><span style="--c:#91a4a0">Travel · dashed</span><span style="--c:#c14f63">Retract</span><span style="--c:#cc9a3e">Recover</span><span style="--c:#7b68b6">Prime</span></div>
+<div class="toolbar"><span id="layerSummary" class="small"></span><label class="toggle"><input id="showTravel" type="checkbox" checked>Show travel moves</label></div>
+<div class="playback"><div class="playrow"><div class="buttons"><button class="primary" id="play" type="button">Play</button><button id="reset" type="button">Reset</button><label class="rate">Speed<select id="speed"><option value="0.25">0.25×</option><option value="1" selected>1×</option><option value="4">4×</option><option value="10">10×</option></select></label></div><span class="time mono" id="clock"></span></div>
+<div class="sliders"><label for="step"><span id="stepLabel">Operation</span><input id="step" type="range" min="0" value="0" step="1"></label><label for="progress"><span id="progressLabel">Segment progress</span><input id="progress" type="range" min="0" max="1000" value="0" step="1"></label></div><p class="caption" id="playbackNote" role="status" aria-live="polite"></p></div>
+<div class="readouts"><div class="metric"><span id="poseLabel">End effector · world (m)</span><strong id="pose" class="mono"></strong></div><div class="metric"><span>Commanded filament (mm)</span><strong id="filament" class="mono"></strong></div><div class="metric"><span>Current operation</span><strong id="motionIntent"></strong></div></div>
+<div class="source"><details><summary>Source operation and planned timing</summary><pre id="operation"></pre></details></div></section>
+<aside class="card sidebar"><div><h2>Robot geometry</h2><p id="modelStatus" class="small"></p><label class="toggle"><input id="showWorkspace" type="checkbox" checked>Show configured XYZ envelope</label><div class="cables" id="cables"></div><p class="small" id="cableNote"></p></div><div id="mechanicsPanel" class="section" hidden><h2>Sampled mechanics</h2><p id="mechanicsModel" class="small"></p><p id="collisionStatus"></p><p id="tensionStatus"></p><button id="firstIssue" type="button">Inspect first issue</button><label class="toggle"><input id="showObstacles" type="checkbox" checked>Show modeled obstacles</label><p id="mechanicsSample" class="small"></p><p id="mechanicsContacts" class="small"></p><details><summary>Scope and assumptions</summary><pre id="mechanicsScope"></pre></details></div><div class="section"><h2>Recorded planning checks</h2><ul id="checks"></ul></div><div class="section"><details><summary>Model, source and diagnostics</summary><pre id="details"></pre></details></div></aside></div>
+</main><script id="jobdata" type="application/json">__CDPR_JOB_DATA__</script><script id="robotdata" type="application/json">__CDPR_ROBOT_DATA__</script><script>
+'use strict';
+const byId=id=>document.getElementById(id),job=JSON.parse(byId('jobdata').textContent),robot=JSON.parse(byId('robotdata').textContent);
+const operations=job.operations,motions=operations.filter(op=>op.motion!==null),canvas=byId('plot'),ctx=canvas.getContext('2d');
+const mechanics=robot&&robot.mechanics?robot.mechanics:null,physical=mechanics?mechanics.physical_model:null,mechanicsSamples=new Map();
+const environmentBoxes=physical?.collision?[...(physical.collision.obstacles_world||[]),...(physical.collision.bed_reference_world?[physical.collision.bed_reference_world]:[])]:[];
+if(mechanics)for(const sample of mechanics.samples){if(!mechanicsSamples.has(sample.operation_id))mechanicsSamples.set(sample.operation_id,[]);mechanicsSamples.get(sample.operation_id).push(sample);}
+function mechanicsAt(current){if(!mechanics||!current)return null;const list=mechanicsSamples.get(current.move.id);return list?list[Math.min(list.length-1,Math.round(current.progress*(list.length-1)))]:null;}
+const colors={none:'#91a4a0',deposit:'#167f68',retract:'#c14f63',recover:'#cc9a3e',prime:'#7b68b6'};
+const cableColors=Array.from({length:8},(_,i)=>i<4?'#578cc0':'#bd873d');
+const timed=job.stage==='timed',hasEE=motions.length>0&&motions.every(op=>op.motion.end_effector!==null),geometryReplay=!timed&&hasEE&&mechanics!==null;
+const state={index:0,fraction:0,playing:false,waiting:false,last:null,raf:0,fit:'robot'};
+const camera={yaw:-0.82,pitch:0.48,zoom:1,target:[0,0,0],radius:1,pan:[0,0]};
+const add=(a,b)=>a.map((v,i)=>v+b[i]),sub=(a,b)=>a.map((v,i)=>v-b[i]),mul=(a,k)=>a.map(v=>v*k),dot=(a,b)=>a.reduce((s,v,i)=>s+v*b[i],0);
+const lerp=(a,b,f)=>f===0?a.slice():f===1?b.slice():a.map((v,i)=>v+(b[i]-v)*f);
+const cross=(a,b)=>[a[1]*b[2]-a[2]*b[1],a[2]*b[0]-a[0]*b[2],a[0]*b[1]-a[1]*b[0]];
+const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+function rotate(q,p){const v=[q.x,q.y,q.z],t=mul(cross(v,p),2);return add(p,add(mul(t,q.w),cross(v,t)));}
+function world(p){const t=job.frames.world_from_bed;return t?add(rotate(t.rotation_xyzw,p),t.translation_m):p;}
+function displayGeometry(op,frame){if(mechanics&&frame==='end_effector'){const g=op.motion.nozzle;return {start:{position_m:world(g.start.position_m)},end:{position_m:world(g.end.position_m)}};}return op.motion[frame];}
+function fromWorld(p){if(byId('frame').value==='end_effector')return p;const t=job.frames.world_from_bed;if(!t)return p;const q=t.rotation_xyzw;return rotate({x:-q.x,y:-q.y,z:-q.z,w:q.w},sub(p,t.translation_m));}
+function boxPoints(lo,hi){return [0,1,2,3,4,5,6,7].map(i=>[i&1?hi[0]:lo[0],i&2?hi[1]:lo[1],i&4?hi[2]:lo[2]]);}
+function bounds(points){const lo=[Infinity,Infinity,Infinity],hi=[-Infinity,-Infinity,-Infinity];for(const p of points)for(let k=0;k<3;k++){lo[k]=Math.min(lo[k],p[k]);hi[k]=Math.max(hi[k],p[k]);}return points.length?{lo,hi}:{lo:[-.1,-.1,-.1],hi:[.1,.1,.1]};}
+const frameBounds=robot?bounds(robot.frame_anchors_m):null;
+const eeBounds=robot?bounds(robot.ee_attachments_m):null;
+const previousMotion=[];let lastMotion=null;
+for(const op of operations){previousMotion.push(lastMotion);if(op.motion!==null)lastMotion=op;}
+// Derive horizontal deposition heights from geometry, never from comments.
+// shortcut: nonplanar paths have no discrete layer selector; add a producer layer contract when needed.
+const heights=new Set();
+for(const op of motions){const g=op.motion.nozzle;if(Math.abs(g.end.position_m[2]-g.start.position_m[2])<1e-9&&op.motion.extrusion_spans.some(s=>s.purpose==='deposit'))heights.add(Math.round(g.end.position_m[2]*1e9));}
+const layers=[...heights].sort((a,b)=>a-b).map(z=>z/1e9),operationLayer=new Map(),layerLast=new Map();
+for(const op of motions){const z=op.motion.nozzle.end.position_m[2];let i=layers.findIndex(h=>Math.abs(z-h)<1e-9);if(i<0)i=layers.findIndex(h=>h>=z);if(i<0)i=layers.length-1;operationLayer.set(op.id,i);layerLast.set(i,op.id);}
+for(let i=0;i<layers.length;i++){const option=document.createElement('option');option.value=String(i);option.textContent=(i+1)+' / '+layers.length+' · Z '+(layers[i]*1000).toFixed(3)+' mm';byId('layer').append(option);}
+byId('layer').disabled=layers.length===0;
+byId('layerSummary').textContent=layers.length?layers.length+' deposition heights · select a layer to inspect the build up to that height.':'No horizontal deposited layers; inspect the original operations.';
+function visibleLayer(op){return byId('layer').value==='all'||operationLayer.get(op.id)<=Number(byId('layer').value);}
+const samples=new Map(robot?robot.cable_samples.map(s=>[s.operation_id,s.samples]):[]);
+function motionState(){const op=operations[state.index],move=op.motion!==null?op:previousMotion[state.index]||motions[0];if(!move)return null;
+ const fraction=op.motion!==null?state.fraction:previousMotion[state.index]?1:0;
+ const progress=move.timing!==null?fraction*fraction*fraction*(10+fraction*(-15+6*fraction)):fraction;
+ const m=move.motion,pose=geometry=>geometry?{position_m:lerp(geometry.start.position_m,geometry.end.position_m,progress),orientation_xyzw:geometry.start.orientation_xyzw}:null;
+ return {move,fraction,progress,nozzle:pose(m.nozzle),ee:pose(m.end_effector),filament:m.filament_position_start_mm+m.delta_filament_mm*progress};
+}
+function geometryPoints(depositedOnly=false){const frame=byId('frame').value,result=[];for(const op of motions){if(!visibleLayer(op)||depositedOnly&&layers.length&&!op.motion.extrusion_spans.some(s=>s.purpose==='deposit'))continue;const g=displayGeometry(op,frame);if(g)result.push(g.start.position_m,g.end.position_m);}return result;}
+function fit(mode){state.fit=mode;const points=geometryPoints(mode==='path');if(robot&&mode==='robot')points.push(...robot.frame_anchors_m.map(fromWorld));
+ if(mechanics&&mode==='robot'&&byId('showObstacles').checked)for(const box of environmentBoxes)points.push(...boxPoints(box.minimum_m,box.maximum_m).map(fromWorld));
+ const b=bounds(points);camera.target=b.lo.map((v,i)=>v+(b.hi[i]-v)/2);camera.radius=Math.max(.01,...b.hi.map((v,i)=>(v-b.lo[i])*.7));camera.zoom=1;camera.pan=[0,0];
+ // Fit the projected corners, including perspective depth and viewport aspect.
+ // A world-space bounding sphere alone clips the tall frame on narrow screens.
+ const width=canvas.clientWidth,height=canvas.clientHeight,focal=Math.min(width,height)*2.35;
+ const cy=Math.cos(camera.yaw),sy=Math.sin(camera.yaw),cp=Math.cos(camera.pitch),sp=Math.sin(camera.pitch);
+ const right=[-sy,cy,0],up=[-sp*cy,-sp*sy,cp],toward=[cp*cy,cp*sy,sp],view=byId('plane').value;
+ for(let attempt=0;attempt<20;attempt++){let scale=1;for(const p of points){const n=mul(sub(p,camera.target),1/camera.radius);let x,y;if(view==='3d'){const depth=4-dot(n,toward);if(depth<=.5){scale=2;break;}x=dot(n,right)*focal/depth;y=dot(n,up)*focal/depth;}else{const axes=view.split('').map(Number);x=n[axes[0]]*focal/4;y=n[axes[1]]*focal/4;}scale=Math.max(scale,Math.abs(x)/Math.max(40,(width-110)/2),Math.abs(y)/Math.max(40,(height-155)/2));}if(scale<=1.001)break;camera.radius*=Math.max(1.04,Math.min(2,scale));}
+ schedule();}
+function resetCamera(){camera.yaw=-.82;camera.pitch=.48;fit(state.fit);}
+byId('summary').textContent=job.stage+' · '+motions.length+' motion segments · '+job.job_id;
+byId('ee').disabled=!hasEE;if(hasEE)byId('frame').value='end_effector';
+byId('step').max=String(operations.length-1);byId('play').disabled=(!timed&&!geometryReplay)||motions.length===0;
+byId('fitRobot').disabled=!robot;byId('showWorkspace').disabled=!robot||!robot.workspace;
+byId('sceneTitle').textContent=robot?'8-cable CDPR · fixed rails':'3D toolpath · no robot model';
+byId('sceneSubtitle').textContent=robot?'Configured anchors and end-effector attachments':'Robot geometry was not embedded in this artifact';
+byId('modelStatus').textContent=robot?'8 cables · 4 fixed rail offsets\nModel '+robot.model_sha256.slice(0,12):'Path-only preview. Export a transformed, geometric or timed stage with its selected model to display the robot.';
+byId('cableNote').textContent=robot?'Approximate lengths (m), interpolated from shared C++ kinematics. Cable lines are schematic straight spans; pulley wrap, sag and tension are not rendered.':'No robot geometry or cable lengths have been assumed.';
+for(let i=0;robot&&i<8;i++){const row=document.createElement('div');row.className='cable';row.style.setProperty('--c',cableColors[i]);const label=document.createElement('i'),value=document.createElement('b');label.textContent='C'+(i+1);value.id='cable'+i;row.append(label,value);byId('cables').append(row);}
+if(mechanics){byId('mechanicsPanel').hidden=false;byId('noticeText').textContent='Commanded geometry with sampled collision and quasi-static load analysis under the supplied model. Continuous clearance, dynamics, growing print, feedback and physical execution remain unverified.';
+ byId('ee').textContent='World / robot';byId('mechanicsModel').textContent=(physical.synthetic?'Synthetic test model · ':'User-specified model · ')+physical.model_id+(physical.statics?' · '+physical.statics.mass_kg+' kg':'')+'\n'+mechanics.sample_count.toLocaleString()+' samples · max step '+(physical.sampling.maximum_step_m*1000)+' mm';
+ const collisionNames={not_evaluated:'Needs collision geometry',sampled_clear:'No contact found at samples',potential_collision:'Potential collision detected'},tensionNames={not_evaluated:'Needs mass and load data',feasible_at_samples:'Static load balances within supplied limits',infeasible_at_samples:'Static load cannot balance at some samples',limits_not_evaluated:'Load balances; pretension and working limits unknown'};
+ byId('collisionStatus').textContent='Collision: '+collisionNames[mechanics.collision.status];byId('collisionStatus').className=mechanics.collision.status==='potential_collision'?'failed':'small';
+ byId('tensionStatus').textContent='Tension: '+tensionNames[mechanics.tension.status];byId('tensionStatus').className=mechanics.tension.status==='infeasible_at_samples'?'failed':'small';
+ if(mechanics.tension.breaking_strength_known&&!mechanics.tension.working_limits_known)byId('tensionStatus').textContent+=' · breaking strength is not an allowed working tension.';
+ if(mechanics.tension.minimum_wrench_rank!==null&&mechanics.tension.minimum_wrench_rank<6)byId('tensionStatus').textContent+=' · Rank '+mechanics.tension.minimum_wrench_rank+'/6: some force/torque directions are unsupported.';
+ byId('showObstacles').disabled=!environmentBoxes.length;byId('mechanicsScope').textContent=physical.provenance+'\n\nWorld view draws the nozzle path; the pose readout is the EE origin.\n\nChecked: '+mechanics.collision.coverage.join(', ')+'\n\n'+mechanics.limitations.join('\n\n');
+ for(let i=0;i<8;i++){const value=document.createElement('span');value.id='tension'+i;value.className='mono';value.style.fontSize='10px';byId('cable'+i).parentElement.append(value);}
+ const first=mechanics.samples.find(s=>s.collision_count>0||s.tension_status==='infeasible');byId('firstIssue').disabled=!first;
+ byId('firstIssue').addEventListener('click',()=>{pause();byId('layer').value='all';state.index=first.operation_id;state.waiting=false;let lo=0,hi=1;for(let i=0;i<45;i++){const u=(lo+hi)/2,s=u*u*u*(10+u*(-15+6*u));if(s<first.progress)lo=u;else hi=u;}state.fraction=timed?(lo+hi)/2:first.progress;schedule();});
+ byId('showObstacles').addEventListener('change',()=>fit(state.fit));
+ byId('cableNote').textContent+=' Static allocations below are in N at the nearest assessment sample; they are not sensor readings or motor commands.';
+}
+for(const check of job.validation.checks){const row=document.createElement('li'),name=document.createElement('span'),status=document.createElement('span');name.textContent=check.kind.replace(/_/g,' ');status.textContent=check.status.replace(/_/g,' ');status.className=check.status;row.append(name,status);row.title=check.diagnostics.map(d=>d.message).join('\n');byId('checks').append(row);}
+byId('details').textContent='Source: '+job.source.file_name+'\nSHA-256: '+job.source.sha256+'\nFrames: '+job.frames.status+(robot?'\nModel: '+robot.model_sha256+'\nRail offsets (m): '+robot.rail_offsets_m.join(', '):'')+'\n\n'+job.validation.checks.flatMap(c=>c.diagnostics.map(d=>c.kind+': '+d.message)).join('\n');
+function updateReadouts(current){const op=operations[state.index],g=current?(byId('frame').value==='end_effector'?current.ee:current.nozzle):null;
+ byId('poseLabel').textContent=byId('frame').value==='end_effector'?'End effector · world (m)':'Nozzle · print bed (m)';
+ byId('pose').textContent=g?g.position_m.map(v=>v.toFixed(4)).join(' / '):'—';byId('filament').textContent=current?current.filament.toFixed(4):'—';
+ byId('motionIntent').textContent=op.motion!==null?op.motion.intent.replace(/_/g,' '):op.kind.replace(/_/g,' ');
+ byId('step').value=String(state.index);byId('progress').value=String(Math.round(state.fraction*1000));byId('progress').disabled=op.motion===null&&(!op.timing||op.timing.duration_s===0);
+ byId('stepLabel').textContent='Operation '+op.id+' / '+(operations.length-1);byId('progressLabel').textContent=(timed?'Segment time':'Segment position')+' · '+Math.round(state.fraction*100)+'%';
+ byId('clock').textContent=op.timing?'Epoch '+op.timing.epoch_id+' · '+(op.timing.start_s+op.timing.duration_s*state.fraction).toFixed(3)+' s':geometryReplay?'Geometry replay · illustrative timing only':'Untimed geometry · manual scrub';
+ byId('play').textContent=state.playing?'Pause':state.waiting?'Continue':geometryReplay?'Play geometry':'Play';byId('play').setAttribute('aria-pressed',String(state.playing));
+ const note=state.waiting?'Temperature wait: playback paused. Continue manually; no heater feedback is simulated.':geometryReplay?'Geometry replay uses 0.3 seconds per motion for visualization. No actuator timing or physical print duration is implied.':!timed?'Timing is unavailable. Use the sliders to inspect geometry.':op.kind==='end_job'?'End of planned job. Reset to play again.':'Playback follows the planned quintic profile. Camera changes do not change the plan.';
+ if(byId('playbackNote').textContent!==note)byId('playbackNote').textContent=note;
+ const detail={id:op.id,kind:op.kind,source:op.source,timing:op.timing?{epoch:op.timing.epoch_id,start_s:op.timing.start_s,duration_s:op.timing.duration_s,interpolation:op.timing.interpolation}:null};
+ if(op.motion){detail.intent=op.motion.intent;detail.delta_filament_mm=op.motion.delta_filament_mm;detail.spans=op.motion.extrusion_spans;}for(const key of ['temperature','fan','dwell','barrier'])if(op[key]!==null)detail[key]=op[key];
+ byId('operation').textContent=JSON.stringify(detail,null,2);
+ if(robot&&current){const list=samples.get(current.move.id),offset=current.fraction*(list.length-1),i=Math.min(list.length-2,Math.floor(offset)),f=offset-i;
+  for(let k=0;k<8;k++)byId('cable'+k).textContent=(list[i].lengths_m[k]+(list[i+1].lengths_m[k]-list[i].lengths_m[k])*f).toFixed(4);}
+ if(mechanics){const sample=mechanicsAt(current);for(let k=0;k<8;k++)byId('tension'+k).textContent=sample&&sample.tension_n?sample.tension_n[k].toFixed(1)+' N':'— N';
+  byId('mechanicsSample').textContent=sample?'Nearest sample: operation '+sample.operation_id+' · '+(sample.progress*100).toFixed(1)+'%'+(sample.minimum_clearance_m!==null?' · clearance '+(sample.minimum_clearance_m*1000).toFixed(2)+' mm':'')+(sample.wrench_rank!==null?' · wrench rank '+sample.wrench_rank+'/6':'')+(sample.breaking_strength_fraction?' · allocation max '+(Math.max(...sample.breaking_strength_fraction)*100).toFixed(1)+'% of breaking strength':'')+(sample.tension_n?.some(n=>n<1e-6)?' · allocation includes zero-tension cables; pretension unverified':''):'No mechanics sample at this operation; provide the missing model inputs.';
+  const contactLabel=id=>id.startsWith('cable_')?'C'+(Number(id.slice(6))+1):id;
+  byId('mechanicsContacts').textContent=sample?(sample.collision_count>sample.contacts.length?'Showing '+sample.contacts.length+' smallest-clearance contacts of '+sample.collision_count+':\n':'')+sample.contacts.map(c=>contactLabel(c.a)+' / '+contactLabel(c.b)+' · '+c.kind.replace(/_/g,' ')).join('\n'):'';
+ }
+}
+const edges=[[0,1],[0,2],[0,4],[1,3],[1,5],[2,3],[2,6],[3,7],[4,5],[4,6],[5,7],[6,7]];
+function draw(){const width=canvas.clientWidth,height=canvas.clientHeight,ratio=Math.min(devicePixelRatio||1,2);if(canvas.width!==Math.round(width*ratio)||canvas.height!==Math.round(height*ratio)){canvas.width=Math.round(width*ratio);canvas.height=Math.round(height*ratio);}ctx.setTransform(ratio,0,0,ratio,0,0);ctx.clearRect(0,0,width,height);
+ const background=ctx.createLinearGradient(0,0,0,height);background.addColorStop(0,'#f9fcfa');background.addColorStop(1,'#edf4f0');ctx.fillStyle=background;ctx.fillRect(0,0,width,height);
+ const current=motionState(),mechanicsSample=mechanicsAt(current),badCables=new Set(mechanicsSample?mechanicsSample.contacts.flatMap(c=>[c.a,c.b]).filter(id=>id.startsWith('cable_')).map(id=>Number(id.slice(6))):[]),view=byId('plane').value,primitives=[],cy=Math.cos(camera.yaw),sy=Math.sin(camera.yaw),cp=Math.cos(camera.pitch),sp=Math.sin(camera.pitch);
+ const right=[-sy,cy,0],up=[-sp*cy,-sp*sy,cp],toward=[cp*cy,cp*sy,sp],focal=Math.min(width,height)*2.35*camera.zoom;
+ function project(p){const n=mul(sub(p,camera.target),1/camera.radius);let x,y,z;if(view==='3d'){z=4-dot(n,toward);if(z<.05)return null;x=dot(n,right)*focal/z;y=dot(n,up)*focal/z;}else{const axes=view.split('').map(Number);z=4-n[3-axes[0]-axes[1]];x=n[axes[0]]*focal/4;y=n[axes[1]]*focal/4;}return {x:width/2+x+camera.pan[0],y:height/2-y+camera.pan[1],depth:z};}
+ function line(a,b,color,size=1,alpha=1,dashed=false){const p=project(a),q=project(b);if(p&&q)primitives.push({depth:(p.depth+q.depth)/2,draw(){ctx.strokeStyle=color;ctx.lineWidth=size;ctx.globalAlpha=alpha;ctx.setLineDash(dashed?[4,5]:[]);ctx.beginPath();ctx.moveTo(p.x,p.y);ctx.lineTo(q.x,q.y);ctx.stroke();}});}
+ function circle(p,color,size=3,label=null,overlay=false){const q=project(p);if(q)primitives.push({depth:overlay?-Infinity:q.depth-.001,draw(){ctx.globalAlpha=1;ctx.setLineDash([]);ctx.beginPath();ctx.arc(q.x,q.y,size,0,Math.PI*2);ctx.fillStyle=color;ctx.fill();ctx.strokeStyle='#ffffff';ctx.lineWidth=1;ctx.stroke();if(label){ctx.font='10px system-ui';ctx.strokeStyle='#ffffff';ctx.lineWidth=3;ctx.strokeText(label,q.x+7,q.y-5);ctx.fillStyle='#294d43';ctx.fillText(label,q.x+7,q.y-5);}}});}
+ function polygon(points,fill,alpha){const p=points.map(project);if(p.every(Boolean))primitives.push({depth:p.reduce((s,v)=>s+v.depth,0)/p.length,draw(){ctx.globalAlpha=alpha;ctx.fillStyle=fill;ctx.beginPath();ctx.moveTo(p[0].x,p[0].y);for(const q of p.slice(1))ctx.lineTo(q.x,q.y);ctx.closePath();ctx.fill();}});}
+ function wire(points,color,size,alpha,dashed){for(const [a,b] of edges)line(points[a],points[b],color,size,alpha,dashed);}
+ const scenePoint=bedPoint=>byId('frame').value==='nozzle'?bedPoint:world(bedPoint);
+ let gridRadius=robot&&robot.workspace?Math.max(.05,...robot.workspace.maximum_m.map((v,i)=>(v-robot.workspace.minimum_m[i])*.5)):Math.max(.02,camera.radius);
+ const gridCenter=job.frames.world_from_bed?[0,0,0]:camera.target.map((v,i)=>i===2?0:v),gridPoint=(x,y)=>scenePoint([gridCenter[0]+x,gridCenter[1]+y,0]);
+ polygon([gridPoint(-gridRadius,-gridRadius),gridPoint(gridRadius,-gridRadius),gridPoint(gridRadius,gridRadius),gridPoint(-gridRadius,gridRadius)],'#bdd1c3',.1);
+ for(let i=-5;i<=5;i++){const t=i*gridRadius/5;line(gridPoint(t,-gridRadius),gridPoint(t,gridRadius),'#b6cdbf',.7,.55);line(gridPoint(-gridRadius,t),gridPoint(gridRadius,t),'#b6cdbf',.7,.55);}
+ if(robot){wire(boxPoints(frameBounds.lo,frameBounds.hi).map(fromWorld),'#728b91',3,.6,false);
+  if(robot.workspace&&byId('showWorkspace').checked)wire(boxPoints(robot.workspace.minimum_m,robot.workspace.maximum_m).map(fromWorld),'#83ad9b',1,.45,true);
+  if(current&&current.ee){const pose=current.ee,attachments=robot.ee_attachments_m.map(p=>fromWorld(add(rotate(pose.orientation_xyzw,p),pose.position_m)));
+   for(let i=0;i<8;i++){const color=badCables.has(i)?'#c14f63':cableColors[i];line(fromWorld(robot.frame_anchors_m[i]),attachments[i],color,badCables.has(i)?2.7:1.5,.85);circle(fromWorld(robot.frame_anchors_m[i]),color,4,String(i+1));circle(attachments[i],color,2.4);}
+   const components=physical?.collision?.ee_boxes_local_m||[{id:'attachment_envelope',minimum_m:eeBounds.lo,maximum_m:eeBounds.hi}];
+   for(const component of components){const body=boxPoints(component.minimum_m,component.maximum_m).map(p=>fromWorld(add(rotate(pose.orientation_xyzw,p),pose.position_m))),contact=mechanicsSample?.contacts.some(c=>c.a===component.id||c.b===component.id);for(const face of [[0,1,3,2],[4,5,7,6],[0,1,5,4],[2,3,7,6],[0,2,6,4],[1,3,7,5]])polygon(face.map(i=>body[i]),contact?'#c14f63':'#47796e',.16);wire(body,contact?'#c14f63':'#315c53',1.5,.95,false);}
+   const tip=fromWorld(world(current.nozzle.position_m));line(fromWorld(pose.position_m),tip,'#263f37',3);circle(tip,'#da7752',4,mechanics?'Nozzle':null);circle(fromWorld(pose.position_m),'#244e42',3);
+   if(physical?.statics){const cog=add(rotate(pose.orientation_xyzw,physical.statics.cog_ee_m),pose.position_m);circle(fromWorld(cog),'#b26e2a',5,'CoG',true);}
+  }}
+ if(mechanics&&byId('showObstacles').checked)for(const box of environmentBoxes){const points=boxPoints(box.minimum_m,box.maximum_m).map(fromWorld),contact=mechanicsSample?.contacts.some(c=>c.a===box.id||c.b===box.id);wire(points,contact?'#c14f63':'#9474a6',2,.9,false);polygon([points[0],points[1],points[3],points[2]],'#9474a6',.12);}
+ const activeFrame=byId('frame').value;let depositSegments=0,travelSegments=0;
+ for(const op of motions){if(!visibleLayer(op))continue;const g=displayGeometry(op,activeFrame);if(!g)continue;for(const span of op.motion.extrusion_spans){if(span.purpose==='none'&&!byId('showTravel').checked)continue;if(span.purpose==='deposit')depositSegments++;if(span.purpose==='none')travelSegments++;const start=span.start_fraction,end=span.end_fraction,done=op.id<state.index;let cut=op.id===state.index&&current?current.progress:done?1:0;
+  const a=lerp(g.start.position_m,g.end.position_m,start),b=lerp(g.start.position_m,g.end.position_m,end);line(a,b,colors[span.purpose],1.3,.2,span.purpose==='none');
+  if(cut>start)line(a,lerp(g.start.position_m,g.end.position_m,Math.min(end,cut)),colors[span.purpose],2.8,1,span.purpose==='none');
+  if(g.start.position_m.every((v,i)=>v===g.end.position_m[i]))circle(a,colors[span.purpose],op.id===state.index?4:2);
+ }}
+ if(current){const g=activeFrame==='end_effector'?current.ee:current.nozzle;if(g)circle(mechanics&&activeFrame==='end_effector'?world(current.nozzle.position_m):g.position_m,'#147e65',4);}
+ primitives.sort((a,b)=>b.depth-a.depth);for(const primitive of primitives)primitive.draw();ctx.globalAlpha=1;ctx.setLineDash([]);
+ // Small orientation tripod stays legible even when the robot is zoomed out.
+ const origin=[width-55,height-65];for(const [axis,color] of [[0,'#b96862'],[1,'#568e6a'],[2,'#5687ae']]){const v=[0,0,0];v[axis]=1;let dx,dy;if(view==='3d'){dx=dot(v,right)*24;dy=-dot(v,up)*24;}else{const axes=view.split('').map(Number);dx=axis===axes[0]?24:0;dy=axis===axes[1]?-24:0;}ctx.beginPath();ctx.moveTo(...origin);ctx.lineTo(origin[0]+dx,origin[1]+dy);ctx.strokeStyle=color;ctx.lineWidth=2;ctx.stroke();ctx.fillStyle=color;ctx.font='10px system-ui';ctx.fillText('XYZ'[axis],origin[0]+dx+3,origin[1]+dy-3);}
+ byId('sceneScale').textContent=(robot?'8 cables · ':'Path only · ')+'~'+(width*4/focal*camera.radius).toPrecision(3)+' m view span';updateReadouts(current);
+ canvas.dataset.operation=String(state.index);canvas.dataset.fraction=String(state.fraction);canvas.dataset.playing=String(state.playing);canvas.dataset.waiting=String(state.waiting);
+ canvas.dataset.layer=byId('layer').value;canvas.dataset.depositSegments=String(depositSegments);canvas.dataset.travelSegments=String(travelSegments);
+}
+function pause(){state.playing=false;state.last=null;schedule();}
+function advance(){if(state.index+1>=operations.length){state.playing=false;return false;}state.index++;state.fraction=0;return true;}
+function tick(seconds){let budget=seconds*Number(byId('speed').value);for(let guard=0;guard<200&&state.playing;guard++){const op=operations[state.index];
+ if(op.kind==='wait_temperature'){state.playing=false;state.waiting=true;break;}if(op.kind==='end_job'){state.playing=false;break;}
+ const duration=timed?op.timing.duration_s:op.motion!==null?.3:0,remaining=duration*(1-state.fraction);if(duration>0&&budget<remaining){state.fraction+=budget/duration;break;}
+ budget=Math.max(0,budget-remaining);state.fraction=1;if(!advance())break;
+ }}
+function frame(stamp){state.raf=0;if(state.playing){if(state.last!==null)tick(Math.max(0,(stamp-state.last)/1000));state.last=stamp;}else state.last=null;draw();if(state.playing)schedule();}
+function schedule(){if(!state.raf)state.raf=requestAnimationFrame(frame);}
+byId('play').addEventListener('click',()=>{if(state.playing){pause();return;}byId('layer').value='all';if(state.waiting){state.waiting=false;if(!advance())return;}if(operations[state.index].kind==='end_job'){state.index=0;state.fraction=0;}state.playing=true;state.last=null;schedule();});
+byId('reset').addEventListener('click',()=>{pause();byId('layer').value='all';state.index=0;state.fraction=0;state.waiting=false;schedule();});
+byId('step').addEventListener('input',()=>{pause();byId('layer').value='all';state.index=Number(byId('step').value);state.fraction=0;state.waiting=operations[state.index].kind==='wait_temperature';schedule();});
+byId('progress').addEventListener('input',()=>{pause();state.fraction=Number(byId('progress').value)/1000;schedule();});
+byId('plane').addEventListener('input',()=>fit(state.fit));byId('frame').addEventListener('input',()=>fit(state.fit));byId('showWorkspace').addEventListener('change',schedule);
+byId('fitRobot').addEventListener('click',()=>fit('robot'));byId('fitPath').addEventListener('click',()=>fit('path'));byId('homeCamera').addEventListener('click',resetCamera);
+byId('layer').addEventListener('change',()=>{pause();if(byId('layer').value!=='all'){state.index=layerLast.get(Number(byId('layer').value));state.fraction=1;state.waiting=false;}schedule();});
+byId('showTravel').addEventListener('change',schedule);
+document.addEventListener('visibilitychange',()=>{if(document.hidden)pause();});
+const reduce=matchMedia('(prefers-reduced-motion: reduce)');reduce.addEventListener('change',event=>{if(event.matches)pause();});
+const pointers=new Map();let gesture=null;
+canvas.addEventListener('pointerdown',event=>{if(byId('plane').value!=='3d')return;canvas.focus({preventScroll:true});canvas.setPointerCapture(event.pointerId);pointers.set(event.pointerId,[event.clientX,event.clientY]);gesture=null;});
+canvas.addEventListener('pointermove',event=>{if(!pointers.has(event.pointerId))return;const old=pointers.get(event.pointerId);pointers.set(event.pointerId,[event.clientX,event.clientY]);if(pointers.size===1){if(event.shiftKey){camera.pan[0]+=event.clientX-old[0];camera.pan[1]+=event.clientY-old[1];}else{camera.yaw-=(event.clientX-old[0])*.008;camera.pitch=clamp(camera.pitch+(event.clientY-old[1])*.008,-1.35,1.35);}}else if(pointers.size===2){const p=[...pointers.values()],distance=Math.hypot(p[0][0]-p[1][0],p[0][1]-p[1][1]);if(gesture&&gesture>0)camera.zoom=clamp(camera.zoom*distance/gesture,.2,30);gesture=distance;}schedule();});
+for(const type of ['pointerup','pointercancel','lostpointercapture'])canvas.addEventListener(type,event=>{pointers.delete(event.pointerId);gesture=null;});
+canvas.addEventListener('wheel',event=>{event.preventDefault();camera.zoom=clamp(camera.zoom*Math.exp(-event.deltaY*.0015),.2,30);schedule();},{passive:false});
+canvas.addEventListener('keydown',event=>{const moves={ArrowLeft:[.1,0],ArrowRight:[-.1,0],ArrowUp:[0,.1],ArrowDown:[0,-.1]};if(moves[event.key]){event.preventDefault();camera.yaw+=moves[event.key][0];camera.pitch=clamp(camera.pitch+moves[event.key][1],-1.35,1.35);schedule();}else if(['+','=','-','0'].includes(event.key)){event.preventDefault();if(event.key==='0')resetCamera();else{camera.zoom=clamp(camera.zoom*(event.key==='-'?.85:1.15),.2,30);schedule();}}});
+new ResizeObserver(()=>fit(state.fit)).observe(canvas);fit(robot?'robot':'path');
+</script></body></html>

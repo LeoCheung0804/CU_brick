@@ -1,0 +1,22 @@
+{
+  "schema_version": 1,
+  "frames": {
+    "world_frame_id": "cdpr_world",
+    "bed_frame_id": "print_bed",
+    "end_effector_frame_id": "end_effector",
+    "nozzle_frame_id": "nozzle_tip",
+    "world_from_bed": {
+      "translation_m": [0.1, 0.2, 0],
+      "rotation_xyzw": {"x": 0, "y": 0, "z": 0, "w": 1}
+    },
+    "end_effector_from_nozzle": {
+      "translation_m": [0, 0, 0.05],
+      "rotation_xyzw": {"x": 0, "y": 0, "z": 0, "w": 1}
+    },
+    "status": "verified"
+  },
+  "provenance": {
+    "calibration_id": "SYNTHETIC-OFFLINE-CUBE-ONLY",
+    "method": "Mathematical fixture; never machine calibration"
+  }
+}

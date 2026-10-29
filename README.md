@@ -74,7 +74,7 @@ are written under the system temporary directory rather than the repository.
 On startup, the program loads configuration from `RobotConfig.json` and attempts to recover the last position from `lastPos.txt`. You will be presented with a menu to select Calibration or Operation mode.
 
 ---
-
+   
 ### Calibration Mode
 
 For setup, diagnostics, and maintenance. Menu options:

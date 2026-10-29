@@ -1,0 +1,27 @@
+; Synthetic importer fixture. No homing, calibration or physical machine state.
+G21
+G90
+M82
+G92 E0
+G1 X10 Y0 Z0.2 E1 F600
+M83
+G1 E-0.5 F120
+G92 X0 E0
+G1 X5 E0.75 F600
+G91
+G1 X5 E0.25
+G20
+G1 X1 E0.01 F60
+G21
+G90
+G1 X50 E2
+M104 S200 T0
+M109 R195 T0
+M140 S60
+M190 S60
+M106 S128 P0
+G4 P250
+M400
+M107 P0
+M117 Offline fixture
+M73 P100 R0

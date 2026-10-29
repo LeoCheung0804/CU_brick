@@ -93,5 +93,6 @@
         "stack": "cpp",
         "unordered_set": "cpp"
     },
-    "C_Cpp.errorSquiggles": "Disabled"
+    "C_Cpp.errorSquiggles": "Disabled",
+    "cmake.sourceDirectory": "C:/Users/leoch/Documents/Dev/CU_brick/CDPR_3D_Printing_Slicer"
 }

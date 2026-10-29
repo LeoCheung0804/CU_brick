@@ -1,0 +1,29 @@
+{
+  "fixture_schema_version": 1,
+  "synthetic": true,
+  "hardware_access": false,
+  "purpose": "Geometry fixture for a future S2-B model loader; never a Robot configuration.",
+  "kinematics": {
+    "cable_count": 8,
+    "rail_count": 4,
+    "pulley_radius_m": 0.01,
+    "frame_attachments_m": [
+      [-1, -1, -1], [1, -1, -1], [1, 1, -1], [-1, 1, -1],
+      [-1, -1, 1], [1, -1, 1], [1, 1, 1], [-1, 1, 1]
+    ],
+    "end_effector_attachments_m": [
+      [-0.05, -0.05, 0.05], [0.05, -0.05, 0.05],
+      [0.05, 0.05, 0.05], [-0.05, 0.05, 0.05],
+      [-0.05, -0.05, -0.05], [0.05, -0.05, -0.05],
+      [0.05, 0.05, -0.05], [-0.05, 0.05, -0.05]
+    ],
+    "pulley_axes": [
+      [0, 0, -1], [0, 0, -1], [0, 0, -1], [0, 0, -1],
+      [0, 0, 1], [0, 0, 1], [0, 0, 1], [0, 0, 1]
+    ],
+    "rail_offsets_m": [0, 0, 0, 0],
+    "starting_rail_offsets_m": [0, 0, 0, 0],
+    "cable_scale_counts_per_m": [100000, 100000, 100000, 100000, 100000, 100000, 100000, 100000],
+    "workspace_m": {"minimum_m": [-0.5, -0.5, -0.5], "maximum_m": [0.5, 0.5, 0.5]}
+  }
+}

@@ -1,0 +1,68 @@
+{
+  "schema_version": 1,
+  "mode": "offline_planning",
+  "hardware_access": false,
+  "robot_model": {
+    "configuration_path": "../tests/fixtures/robot-model.json",
+    "expected_robot_config_sha256": null,
+    "calibration_manifest_path": "synthetic-calibration.json",
+    "motion_limits_manifest_path": "synthetic-limits.json",
+    "rail_offsets_m": [0, 0, 0, 0],
+    "starting_rail_offsets_m": [0, 0, 0, 0]
+  },
+  "import": {
+    "dialect_id": "marlin_restricted_v1",
+    "initial_state": {
+      "units": "unspecified",
+      "xyz_mode": "unspecified",
+      "extrusion_mode": "unspecified",
+      "nozzle_pose_in_bed": {
+        "position_m": [0, 0, 0],
+        "orientation_xyzw": {"x": 0, "y": 0, "z": 0, "w": 1}
+      },
+      "logical_e_mm": 0,
+      "filament_position_mm": 0,
+      "feedrate_source_units_per_min": null
+    },
+    "maximum_input_bytes": 67108864,
+    "maximum_line_bytes": 4096,
+    "maximum_operations": 20000,
+    "maximum_diagnostics": 10000
+  },
+  "frames": {
+    "world_frame_id": "cdpr_world",
+    "bed_frame_id": "print_bed",
+    "end_effector_frame_id": "end_effector",
+    "nozzle_frame_id": "nozzle_tip",
+    "world_from_bed": null,
+    "end_effector_from_nozzle": null,
+    "status": "unverified"
+  },
+  "planning": {
+    "maximum_samples": 200000,
+    "maximum_samples_per_motion": 50000,
+    "fixed_orientation": true,
+    "fixed_rails": true,
+    "sample_period_s": 0.02,
+    "path_tolerance_m": 0.003,
+    "filament_diameter_mm": 1.75,
+    "temperature_wait_policy": {
+      "hotend": {"tolerance_deg_c": 2, "timeout_s": 60},
+      "bed": {"tolerance_deg_c": 2, "timeout_s": 60}
+    },
+    "limits": {
+      "workspace": null,
+      "maximum_path_speed_m_per_s": null,
+      "maximum_path_acceleration_m_per_s2": null,
+      "minimum_cable_length_m": null,
+      "maximum_cable_length_m": null,
+      "maximum_cable_speed_m_per_s": null,
+      "maximum_cable_acceleration_m_per_s2": null,
+      "minimum_motor_count": null,
+      "maximum_motor_count": null,
+      "maximum_filament_rate_mm_per_s": null,
+      "maximum_volumetric_flow_mm3_per_s": null
+    }
+  },
+  "output_directory": "../out"
+}

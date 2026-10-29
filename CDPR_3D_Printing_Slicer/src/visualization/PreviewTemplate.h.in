@@ -1,0 +1,6 @@
+#ifndef CDPR_SLICER_PREVIEW_TEMPLATE_H
+#define CDPR_SLICER_PREVIEW_TEMPLATE_H
+namespace cdpr_slicer {
+static const char kPreviewTemplate[] = R"CDPR_HTML(@CDPR_SLICER_PREVIEW_TEMPLATE@)CDPR_HTML";
+}
+#endif

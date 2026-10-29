@@ -1,0 +1,21 @@
+# All generated project content stays inside this project.
+/build/
+/out/
+/runtime/
+/.cache/
+/cmake-build-*/
+
+# Local machine configuration must not replace the reviewed examples.
+/config/*.local.json
+/config/*.local.ini
+/config/machines/
+
+# Compiler, editor and Python intermediates.
+*.obj
+*.pdb
+*.ilk
+*.exe
+*.log
+.vs/
+__pycache__/
+*.py[cod]
