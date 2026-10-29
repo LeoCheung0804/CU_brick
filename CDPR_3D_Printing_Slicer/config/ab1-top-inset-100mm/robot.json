@@ -1,0 +1,126 @@
+{
+  "ModelName": "AB1",
+  "cableMotorNum": 8,
+  "railMotorNum": 4,
+  "pulleyRadius": 0.045,
+  "pulleyZdir": [
+    -1,
+    -1,
+    -1,
+    -1,
+    1,
+    1,
+    1,
+    1
+  ],
+  "frameAttachments": [
+    [
+      0,
+      0,
+      -1.8
+    ],
+    [
+      1.85,
+      0,
+      -1.8
+    ],
+    [
+      1.85,
+      1.85,
+      -1.8
+    ],
+    [
+      0,
+      1.85,
+      -1.8
+    ],
+    [
+      0,
+      0,
+      0
+    ],
+    [
+      1.85,
+      0,
+      0
+    ],
+    [
+      1.85,
+      1.85,
+      0
+    ],
+    [
+      0,
+      1.85,
+      0
+    ]
+  ],
+  "endEffectorAttachments": [
+    [
+      -0.1,
+      -0.1,
+      0.29
+    ],
+    [
+      0.1,
+      -0.1,
+      0.29
+    ],
+    [
+      0.1,
+      0.1,
+      0.29
+    ],
+    [
+      -0.1,
+      0.1,
+      0.29
+    ],
+    [
+      -0.2,
+      -0.2,
+      -0.29
+    ],
+    [
+      0.2,
+      -0.2,
+      -0.29
+    ],
+    [
+      0.2,
+      0.2,
+      -0.29
+    ],
+    [
+      -0.2,
+      0.2,
+      -0.29
+    ]
+  ],
+  "useIndividualCableScale": false,
+  "cableMotorScale": 815027.0614,
+  "cableMotorScaleIndividual": [
+    815027.0614,
+    815027.0614,
+    815027.0614,
+    815027.0614,
+    815027.0614,
+    815027.0614,
+    815027.0614,
+    815027.0614
+  ],
+  "endEffectorPosLimit": {
+    "x": -0.1,
+    "y": 2,
+    "z": -0.02,
+    "roll": 13.8,
+    "pitch": -3.75,
+    "yaw": 0.3
+  },
+  "endEffVelLmt": 0.2,
+  "slicer_geometry_provenance": {
+    "source": "../ab1-corners-20261029-robot.local.json",
+    "source_sha256": "d915eae72736e15a60ea69606e145a841c69e82c13f32a3123191aede7af588c",
+    "correction": "User requested upper EE attachments 100 mm inward from each outer X/Y edge. C1-C4: (+/-0.10,+/-0.10,+0.29) m; C5-C8 remain (+/-0.20,+/-0.20,-0.29) m. Same centered origin/CoG, 400x400x580 mm body, nozzle 100 mm below bottom, cable order and routing. Shared offline geometry for the C++ slicer and pyCDPR."
+  }
+}

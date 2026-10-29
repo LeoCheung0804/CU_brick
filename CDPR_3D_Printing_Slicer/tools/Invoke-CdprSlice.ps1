@@ -1,7 +1,7 @@
 #requires -Version 5.1
 <#
 .SYNOPSIS
-Slice an STL with the reviewed PrusaSlicer profile, then export a timed CDPR preview.
+Slice an STL with the reviewed PrusaSlicer profile, then export an offline CDPR preview.
 .EXAMPLE
 & .\tools\Invoke-CdprSlice.ps1 -Model .\tests\fixtures\cube-10mm.stl -PlannerConfig .\config\synthetic-planner.json
 #>
@@ -14,11 +14,13 @@ param(
     [string] $SlicingProfile,
     [double[]] $CenterXYMm = @(50, 50),
     [string] $RunName = ('slice-' + [Guid]::NewGuid().ToString('N')),
-    [switch] $OpenPreview
+    [switch] $OpenPreview,
+    [ValidateSet('geometrically_checked', 'timed')][string] $PlanningStage = 'timed'
 )
 
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
+$PlanningStage = $PlanningStage.ToLowerInvariant()
 $projectDirectory = [IO.Path]::GetFullPath((Join-Path $PSScriptRoot '..'))
 
 function Get-LocalPath([string] $Path, [switch] $File) {
@@ -157,9 +159,9 @@ if (-not [IO.File]::Exists($gcodeSnapshot)) {
 $gcodeSnapshot = Get-LocalPath $gcodeSnapshot -File
 if ((Get-Item -LiteralPath $gcodeSnapshot).Length -gt 64MB) { throw 'Generated G-code exceeds 64 MiB.' }
 $plannerConfigHash = (Get-FileHash -LiteralPath $plannerConfigPath -Algorithm SHA256).Hash.ToLowerInvariant()
-Write-Host 'Validating and timing the CDPR path...'
+Write-Host "Planning the CDPR path ($PlanningStage)..."
 $planned = Invoke-LocalTool $plannerPath @('--input', $gcodeSnapshot, '--config', $plannerConfigPath,
-    '--stage', 'timed', '--output', ($RunName + '.json'), '--preview-output', ($RunName + '.html')) 'planner'
+    '--stage', $PlanningStage, '--output', ($RunName + '.json'), '--preview-output', ($RunName + '.html')) 'planner'
 Write-Host $planned.Output.Trim()
 if ((Get-FileHash -LiteralPath $plannerConfigPath -Algorithm SHA256).Hash.ToLowerInvariant() -ne $plannerConfigHash) {
     throw "Planner configuration changed during the run. Inspect retained outputs for $RunName."
@@ -181,7 +183,7 @@ $receipt = [ordered]@{
         sha256 = (Get-FileHash -LiteralPath $slicerPath -Algorithm SHA256).Hash.ToLowerInvariant() }
     model = [ordered]@{ path = $modelPath; sha256 = (Get-FileHash -LiteralPath $modelSnapshot -Algorithm SHA256).Hash.ToLowerInvariant(); units = 'mm' }
     slicing_profile = [ordered]@{ path = $slicingProfilePath; sha256 = (Get-FileHash -LiteralPath $profileSnapshot -Algorithm SHA256).Hash.ToLowerInvariant() }
-    planner = [ordered]@{ executable = $plannerPath; sha256 = (Get-FileHash -LiteralPath $plannerPath -Algorithm SHA256).Hash.ToLowerInvariant();
+    planner = [ordered]@{ executable = $plannerPath; sha256 = (Get-FileHash -LiteralPath $plannerPath -Algorithm SHA256).Hash.ToLowerInvariant(); stage = $PlanningStage;
         configuration = $plannerConfigPath; configuration_sha256 = $plannerConfigHash }
     placement = [ordered]@{ center_xy_mm = $CenterXYMm; ensure_on_bed = $true }
     outputs = [ordered]@{}

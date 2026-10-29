@@ -1,0 +1,40 @@
+{
+  "schema_version": 1,
+  "frames": {
+    "world_frame_id": "cdpr_world",
+    "bed_frame_id": "print_bed",
+    "end_effector_frame_id": "end_effector",
+    "nozzle_frame_id": "nozzle_tip",
+    "world_from_bed": {
+      "translation_m": [
+        2.502,
+        2.502,
+        -2.205
+      ],
+      "rotation_xyzw": {
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "w": 1
+      }
+    },
+    "end_effector_from_nozzle": {
+      "translation_m": [
+        0,
+        0,
+        -0.39
+      ],
+      "rotation_xyzw": {
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "w": 1
+      }
+    },
+    "status": "verified"
+  },
+  "provenance": {
+    "calibration_id": "AB1-PROPOSED-5MM-MOUNTS-20261029",
+    "method": "Offline 5 mm outward cable fixing centers; bracket geometry and strength unverified. Retain bed [2.502,2.502,-2.205] m, centered EE, nozzle [0,0,-0.39] m and zero rails. Live calibration unverified."
+  }
+}

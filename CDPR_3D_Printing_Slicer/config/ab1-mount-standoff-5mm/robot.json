@@ -1,0 +1,126 @@
+{
+  "ModelName": "AB1",
+  "cableMotorNum": 8,
+  "railMotorNum": 4,
+  "pulleyRadius": 0.045,
+  "pulleyZdir": [
+    -1,
+    -1,
+    -1,
+    -1,
+    1,
+    1,
+    1,
+    1
+  ],
+  "frameAttachments": [
+    [
+      0,
+      0,
+      -2.305
+    ],
+    [
+      5.004,
+      0,
+      -2.305
+    ],
+    [
+      5.004,
+      5.004,
+      -2.305
+    ],
+    [
+      0,
+      5.004,
+      -2.305
+    ],
+    [
+      0,
+      0,
+      0
+    ],
+    [
+      5.004,
+      0,
+      0
+    ],
+    [
+      5.004,
+      5.004,
+      0
+    ],
+    [
+      0,
+      5.004,
+      0
+    ]
+  ],
+  "endEffectorAttachments": [
+    [
+      -0.1,
+      -0.205,
+      0.27
+    ],
+    [
+      0.1,
+      -0.205,
+      0.27
+    ],
+    [
+      0.1,
+      0.205,
+      0.27
+    ],
+    [
+      -0.1,
+      0.205,
+      0.27
+    ],
+    [
+      -0.18,
+      -0.205,
+      -0.27
+    ],
+    [
+      0.18,
+      -0.205,
+      -0.27
+    ],
+    [
+      0.18,
+      0.205,
+      -0.27
+    ],
+    [
+      -0.18,
+      0.205,
+      -0.27
+    ]
+  ],
+  "useIndividualCableScale": false,
+  "cableMotorScale": 815027.0614,
+  "cableMotorScaleIndividual": [
+    815027.0614,
+    815027.0614,
+    815027.0614,
+    815027.0614,
+    815027.0614,
+    815027.0614,
+    815027.0614,
+    815027.0614
+  ],
+  "endEffectorPosLimit": {
+    "x": 0,
+    "y": 5.004,
+    "z": 0,
+    "roll": 5.004,
+    "pitch": -2.305,
+    "yaw": 0
+  },
+  "endEffVelLmt": 0.2,
+  "slicer_geometry_provenance": {
+    "source": "../ab1-frame-5004x5004x2305/robot.json",
+    "source_sha256": "d374a603cacf41b84009e5f82524e8e0fd369563d5cbd5724ccd68e7d516a83f",
+    "correction": "Proposed offline mounting layout requested to avoid cable contact with the aluminum. Move every cable fixing center 5 mm outward along its rail face normal: Y=+/-0.205 m; retain X/Z, cable order, frame anchors, pulleys and zero rails. The rail fixing holes remain on Y=+/-0.200 m; a standoff/eyelet must connect the new cable point to the rail. The 5 mm extension is an unmeasured design assumption; bracket strength and detailed hardware geometry are unverified."
+  }
+}

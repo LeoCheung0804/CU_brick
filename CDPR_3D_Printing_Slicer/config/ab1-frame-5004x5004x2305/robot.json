@@ -1,0 +1,126 @@
+{
+  "ModelName": "AB1",
+  "cableMotorNum": 8,
+  "railMotorNum": 4,
+  "pulleyRadius": 0.045,
+  "pulleyZdir": [
+    -1,
+    -1,
+    -1,
+    -1,
+    1,
+    1,
+    1,
+    1
+  ],
+  "frameAttachments": [
+    [
+      0,
+      0,
+      -2.305
+    ],
+    [
+      5.004,
+      0,
+      -2.305
+    ],
+    [
+      5.004,
+      5.004,
+      -2.305
+    ],
+    [
+      0,
+      5.004,
+      -2.305
+    ],
+    [
+      0,
+      0,
+      0
+    ],
+    [
+      5.004,
+      0,
+      0
+    ],
+    [
+      5.004,
+      5.004,
+      0
+    ],
+    [
+      0,
+      5.004,
+      0
+    ]
+  ],
+  "endEffectorAttachments": [
+    [
+      -0.1,
+      -0.2,
+      0.27
+    ],
+    [
+      0.1,
+      -0.2,
+      0.27
+    ],
+    [
+      0.1,
+      0.2,
+      0.27
+    ],
+    [
+      -0.1,
+      0.2,
+      0.27
+    ],
+    [
+      -0.18,
+      -0.2,
+      -0.27
+    ],
+    [
+      0.18,
+      -0.2,
+      -0.27
+    ],
+    [
+      0.18,
+      0.2,
+      -0.27
+    ],
+    [
+      -0.18,
+      0.2,
+      -0.27
+    ]
+  ],
+  "useIndividualCableScale": false,
+  "cableMotorScale": 815027.0614,
+  "cableMotorScaleIndividual": [
+    815027.0614,
+    815027.0614,
+    815027.0614,
+    815027.0614,
+    815027.0614,
+    815027.0614,
+    815027.0614,
+    815027.0614
+  ],
+  "endEffectorPosLimit": {
+    "x": 0,
+    "y": 5.004,
+    "z": 0,
+    "roll": 5.004,
+    "pitch": -2.305,
+    "yaw": 0
+  },
+  "endEffVelLmt": 0.2,
+  "slicer_geometry_provenance": {
+    "source": "../ab1-rail-face-mounts/robot.json",
+    "source_sha256": "b9202872947cba9e7920be78fd6d23807786696705a06dd7175aa213a7580dbb",
+    "correction": "User corrected outer anchor separations to X=5004 mm, Y=5004 mm, Z=2305 mm. Retain upper world Z=0 and lower XY corner origin; X/Y=0..5.004 m, lower Z=-2.305 m. Preserve confirmed EE rail-face holes, body, cable order/routing, 45 mm pulleys, scales and zero rails. Legacy pose bounds replaced by the anchor bounding box for offline geometric screening only; no working workspace or hardware setting is established."
+  }
+}

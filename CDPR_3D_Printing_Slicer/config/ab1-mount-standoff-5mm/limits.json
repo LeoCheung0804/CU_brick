@@ -1,0 +1,28 @@
+{
+  "schema_version": 1,
+  "geometry_contract": "cu_brick_fixed_rails_v1",
+  "limits": {
+    "workspace": {
+      "minimum_m": [
+        0,
+        0,
+        -2.305
+      ],
+      "maximum_m": [
+        5.004,
+        5.004,
+        0
+      ]
+    },
+    "maximum_path_speed_m_per_s": null,
+    "maximum_path_acceleration_m_per_s2": null,
+    "minimum_cable_length_m": null,
+    "maximum_cable_length_m": null,
+    "maximum_cable_speed_m_per_s": null,
+    "maximum_cable_acceleration_m_per_s2": null,
+    "minimum_motor_count": null,
+    "maximum_motor_count": null,
+    "maximum_filament_rate_mm_per_s": null,
+    "maximum_volumetric_flow_mm3_per_s": null
+  }
+}

@@ -1,0 +1,215 @@
+{
+  "schema_version": 1,
+  "model_id": "AB1-5004x5004x2305-70kg-rail-face-20261029",
+  "provenance": "User-supplied outer anchor separations X/Y=5004 mm and Z=2305 mm, represented by X/Y=0..5.004 m and Z=-2.305..0 m. Existing confirmed rail-face EE mounts, 400x400x580 mm 4040 body, centered CoG, approximately 70 kg mass, nozzle 100 mm below body, 2 mm cables, 45 mm pulleys, zero rails and saved routing retained. Bed reference centered at [2.502,2.502,-2.205] m, 100 mm above lower anchors. Aligned bed/world and anchor-box pose bounds are offline assumptions. Twelve member envelopes, zero clearance/exclusion; mounting end contacts included. Breaking strength 1700 N; working limits unknown. Full frame/head/bed hardware, sag, growing print and dynamics are not modeled.",
+  "synthetic": false,
+  "robot_config_sha256": "d374a603cacf41b84009e5f82524e8e0fd369563d5cbd5724ccd68e7d516a83f",
+  "sampling": {
+    "maximum_step_m": 0.1,
+    "maximum_samples": 20000,
+    "maximum_samples_per_motion": 2001
+  },
+  "collision": {
+    "cable_radius_m": 0.001,
+    "clearance_m": 0,
+    "attachment_exclusion_m": 0,
+    "ee_boxes_local_m": [
+      {
+        "id": "post-0",
+        "minimum_m": [
+          -0.19999999999999998,
+          -0.19999999999999998,
+          -0.29
+        ],
+        "maximum_m": [
+          -0.16,
+          -0.16,
+          0.29
+        ]
+      },
+      {
+        "id": "post-1",
+        "minimum_m": [
+          -0.19999999999999998,
+          0.16,
+          -0.29
+        ],
+        "maximum_m": [
+          -0.16,
+          0.19999999999999998,
+          0.29
+        ]
+      },
+      {
+        "id": "post-2",
+        "minimum_m": [
+          0.16,
+          -0.19999999999999998,
+          -0.29
+        ],
+        "maximum_m": [
+          0.19999999999999998,
+          -0.16,
+          0.29
+        ]
+      },
+      {
+        "id": "post-3",
+        "minimum_m": [
+          0.16,
+          0.16,
+          -0.29
+        ],
+        "maximum_m": [
+          0.19999999999999998,
+          0.19999999999999998,
+          0.29
+        ]
+      },
+      {
+        "id": "x-bar-4",
+        "minimum_m": [
+          -0.2,
+          -0.19999999999999998,
+          -0.29000000000000004
+        ],
+        "maximum_m": [
+          0.2,
+          -0.16,
+          -0.25
+        ]
+      },
+      {
+        "id": "x-bar-5",
+        "minimum_m": [
+          -0.2,
+          0.16,
+          -0.29000000000000004
+        ],
+        "maximum_m": [
+          0.2,
+          0.19999999999999998,
+          -0.25
+        ]
+      },
+      {
+        "id": "y-bar-6",
+        "minimum_m": [
+          -0.19999999999999998,
+          -0.2,
+          -0.29000000000000004
+        ],
+        "maximum_m": [
+          -0.16,
+          0.2,
+          -0.25
+        ]
+      },
+      {
+        "id": "y-bar-7",
+        "minimum_m": [
+          0.16,
+          -0.2,
+          -0.29000000000000004
+        ],
+        "maximum_m": [
+          0.19999999999999998,
+          0.2,
+          -0.25
+        ]
+      },
+      {
+        "id": "x-bar-8",
+        "minimum_m": [
+          -0.2,
+          -0.19999999999999998,
+          0.25
+        ],
+        "maximum_m": [
+          0.2,
+          -0.16,
+          0.29000000000000004
+        ]
+      },
+      {
+        "id": "x-bar-9",
+        "minimum_m": [
+          -0.2,
+          0.16,
+          0.25
+        ],
+        "maximum_m": [
+          0.2,
+          0.19999999999999998,
+          0.29000000000000004
+        ]
+      },
+      {
+        "id": "y-bar-10",
+        "minimum_m": [
+          -0.19999999999999998,
+          -0.2,
+          0.25
+        ],
+        "maximum_m": [
+          -0.16,
+          0.2,
+          0.29000000000000004
+        ]
+      },
+      {
+        "id": "y-bar-11",
+        "minimum_m": [
+          0.16,
+          -0.2,
+          0.25
+        ],
+        "maximum_m": [
+          0.19999999999999998,
+          0.2,
+          0.29000000000000004
+        ]
+      }
+    ],
+    "obstacles_world": [],
+    "bed_reference_world": {
+      "id": "bed_reference_500mm_footprint",
+      "minimum_m": [
+        2.252,
+        2.252,
+        -2.205
+      ],
+      "maximum_m": [
+        2.752,
+        2.752,
+        -2.205
+      ]
+    }
+  },
+  "statics": {
+    "mass_kg": 70,
+    "cog_ee_m": [
+      0,
+      0,
+      0
+    ],
+    "gravity_m_per_s2": [
+      0,
+      0,
+      -9.80665
+    ],
+    "external_force_n": [
+      0,
+      0,
+      0
+    ],
+    "external_torque_nm": [
+      0,
+      0,
+      0
+    ],
+    "minimum_tension_n": null,
+    "maximum_tension_n": null,
+    "breaking_strength_n": 1700
+  }
+}

@@ -7,21 +7,36 @@ repository. All slicer files and future generated outputs stay in this folder.
 
 The [mechanics guide](docs/mechanics.md) now covers sampled collision screening
 and quasi-static cable-load allocation, with a new AB1 500 mm cube view at
-`out/ab1-cube-500mm-corners-review-20261029.html`. It uses the user's approximate
+`out/ab1-cube-500mm-standoff-5mm-10mm-mechanics-20261029.html`.
+Outer anchor spacing is now the user-corrected 5004 x 5004 x 2305 mm.
+The current cube uses
+10 mm first/subsequent layers (50 layers total), with a user-approved 12 mm
+demo nozzle and bead width. It uses the user's approximate
 70 kg, 400 x 400 x 580 mm 4040 frame, 2 mm cables and stated bed/nozzle heights.
-The corrected EE has eight corner attachments at X/Y=+/-0.20 m, Z=+/-0.29 m,
-a centred CoG and a nozzle 100 mm below its bottom (local Z=-0.39 m).
-The user confirmed the saved upper/lower cable routing; the model highlights
-four crossing cable pairs and reports wrench rank 5/6. The corrected frame has
+The latest [shared AB1 proposal](config/ab1-mount-standoff-5mm/README.md) moves
+the free-cable fixing centers 5 mm outward from the aluminum Y faces:
+upper [X=+/-0.10, Y=+/-0.205, Z=+0.27] m and lower
+[X=+/-0.18, Y=+/-0.205, Z=-0.27] m. The reference rail holes remain at
+Y=+/-0.20 m. The proposed bracket/eyelet geometry and strength are unverified;
+the profile is explicitly marked synthetic. The CoG is
+centred and the nozzle extends 100 mm below the bottom (local Z=-0.39 m).
+The Python profile and `pyCDPR/AB1.py` read the same geometry and physical
+parameters. Saved routing is retained. All 1,406 samples have wrench rank 6
+and zero detected contacts, with minimum modeled clearance of 4 mm.
+The member boxes and collision settings are unchanged, with zero attachment
+exclusion. The confirmed rail-face reference and its 16 mount contacts per
+pose remain available separately. The largest returned allocation is about
+1027 N. The corrected frame has
 100 mm initial bed clearance. Working-tension and pretension limits remain unknown;
 1,700 N is the supplied breaking strength, not an allowed working load.
 
 This AB1 job is geometry-only. Its **Play geometry** control uses illustrative
 timing and pauses at temperature waits. The assessment is a separate report;
 the original job, recorded planning checks and hardware readiness do not change.
-Debug and Release native tests and nine corner-geometry artifact/browser groups
-pass. The preceding mechanics release also passed seven CLI and eleven browser
-groups; retained evidence is in [validation](docs/validation.md).
+The proposed mounting layout passes 16 Python tests and eight artifact/browser groups.
+The preceding 10 mm recipe's 28 STL workflow checks, Debug/Release native tests and
+mechanics release's
+CLI/browser checks are retained in [validation](docs/validation.md).
 No new dependency or hardware driver was added.
 
 `tools/Invoke-CdprSlice.ps1` now runs PrusaSlicer 2.9.6 as a separate process,

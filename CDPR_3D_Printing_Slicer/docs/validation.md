@@ -1,5 +1,301 @@
 # Offline validation and 3D preview record
 
+## Proposed 5 mm outward cable fixings — 2026-10-29
+
+The user requested moving the cable attachments to address the collision
+report. New `config/ab1-mount-standoff-5mm/` moves every free-cable fixing
+center 5 mm outward along the local Y face normal: from +/-0.200 to
++/-0.205 m. Upper X/Z remain +/-0.100/+0.270 m and lower X/Z remain
++/-0.180/-0.270 m. Robot SHA-256 is
+`8be5ed5105f1a92263f591b0d9323759da664444e26c346579d6dc1efcb20c0c`.
+Both planner and physical files pin it, and pyCDPR references the same files.
+
+This is a proposed standoff/eyelet design, not a new measurement. The model
+is marked `synthetic: true`, with ID `PROPOSED-AB1-5mm-outward-mounts-20261029`.
+The original rail-face holes and profile remain available. The connection
+hardware, fasteners, local cable contact and their strength are unmodeled.
+All twelve member boxes and the full collision configuration are unchanged:
+1 mm cable radius, zero extra clearance and zero attachment exclusion.
+The same planner binary assessed both layouts; no checks were suppressed.
+
+Real PrusaSlicer and Release planner runs produced new G-code, geometry
+JSON/HTML and receipt with prefix
+`out/ab1-cube-500mm-standoff-5mm-10mm-20261029`.
+The assessment is `out/ab1-cube-500mm-standoff-5mm-10mm-report-20261029.json`;
+the current preview is
+`out/ab1-cube-500mm-standoff-5mm-10mm-mechanics-20261029.html`.
+The 5004 x 5004 x 2305 mm anchor spacing, body/CoG/nozzle, bed registration,
+zero rails and all bed-frame/world paths are unchanged. The job still has
+50 layers at 10 mm spacing, 303 motions and 314 operations, with the approved
+12 mm demo nozzle/bead recipe.
+
+All 1,406 sampled poses now have zero detected contacts and minimum modeled
+clearance 4 mm; the reference reported 16 mount contacts at every pose.
+All poses have rank 6 and a gravity-balancing allocation. The largest returned
+allocation is 1027.31 N, with maximum force/torque residuals approximately
+1.20e-12 N / 3.65e-13 Nm. Mathematical bounds remain 0..1700 N; working
+tensions and pretension remain unknown. This result is sampled clearance
+under the stated model, not hardware clearance or load certification.
+
+Validation passed:
+
+- Sixteen Python regression tests, including the preserved rail-hole reference,
+  proposed coordinates, unchanged collision shapes/settings, 4 mm endpoint
+  clearance, source digest, corrected outer frame and static equilibrium.
+  `AB1.py` now reports the physical model ID and synthetic flag; its default
+  initial straight-cable allocation is about 318.95 N on C5-C8. The native
+  pulley-aware initial allocation is about 310.23 N.
+- Eight artifact/browser groups: real-engine recipe and output provenance;
+  exact frame/bed and unchanged toolpath; all 50 heights and transforms;
+  proposed mounting positions, unchanged collision model/binary and preserved
+  baseline; all sample contacts/ranks/residuals/statuses; preview labels and
+  disabled first-issue navigation; playback/pause/reset; mobile fit with no
+  page errors, warnings or external requests.
+- Desktop and mobile screenshots were visually checked. Installed Playwright
+  and Edge were reused because the Browser plugin was unavailable. Evidence:
+  `build/offline/qa/ab1-standoff-5mm-1793269339948/results.json`,
+  `verify-ab1-standoff-5mm-success.log` and `ab1-standoff-5mm-slice.log`
+  in the parent QA directory. No C++ rebuild or new dependency was needed.
+
+Active root/bin controller configurations retain SHA-256
+`3b39535a98935345005c4b7955706db0918b72b06faf0da4c7868cac2ee59f5e`.
+No hardware was operated. Mounting hardware, continuous clearance, tolerances,
+sag, growing print, dynamics and allowed working loads remain unverified;
+hardware readiness remains false. See the
+[proposal guide](../config/ab1-mount-standoff-5mm/README.md).
+
+## Corrected outer anchor spacing: 5004 x 5004 x 2305 mm — 2026-10-29
+
+The user corrected the outer-frame attachment-point separations. The previous
+shared profile still used X/Y 1850 mm and Z 1800 mm. New
+`config/ab1-frame-5004x5004x2305/` records X/Y 0..5.004 m, lower anchors
+Z=-2.305 m and upper anchors Z=0, preserving the cable order/routing.
+Robot SHA-256 is
+`d374a603cacf41b84009e5f82524e8e0fd369563d5cbd5724ccd68e7d516a83f`;
+planner and physical files bind that same digest.
+
+The EE rail-face holes, 400 x 400 x 580 mm body, centered CoG, nozzle
+[0,0,-0.39] m, 70 kg mass, 2 mm cables, 45 mm pulleys and zero rails are
+retained. The aligned offline bed is recentered to [2.502,2.502,-2.205] m,
+100 mm above the lower anchors. Initial EE position is
+[2.502,2.502,-1.815] m. First/final layer EE Z is -1.805/-1.315 m.
+
+The old native geometry's legacy X envelope ended at 2 m. The new offline
+profile supplies its own required legacy bounds plus an explicit manifest
+enclosure [0,0,-2.305]..[5.004,5.004,0] m. This anchor box is geometric
+screening only, not an approved working workspace. Root/bin controller
+limits and configurations remain unchanged. Live registration is unverified.
+
+Real PrusaSlicer and Release planner runs produced G-code, geometry JSON/HTML
+and receipt with prefix `out/ab1-cube-500mm-frame-5004-2305-10mm-20261029`.
+The separate assessment is
+`out/ab1-cube-500mm-frame-5004-2305-10mm-report-20261029.json`, and its reference
+preview is `out/ab1-cube-500mm-frame-5004-2305-10mm-mechanics-20261029.html`.
+The 50 layers at 10 mm spacing, 303 motions, signed extrusion spans and all
+bed-frame nozzle paths are unchanged. EE world paths are translated by
+[1.577,1.577,-0.505] m from the smaller-frame example.
+
+All 1,406 sampled poses have rank 6 and a gravity-balancing allocation under
+mathematical 0..1700 N bounds. Largest returned tension is 979.12 N; largest
+force/torque residuals are about 6.60e-13 N and 3.48e-13 Nm. Sixteen mount
+contacts remain at every pose. The four retained smallest-clearance contacts
+are now lower-mount contacts at about -1 mm. Collision status remains
+`potential_collision`, working limits remain unknown and hardware readiness
+remains false. No continuous clearance or physical capacity is established.
+
+Validation passed:
+
+- Fifteen Python regressions, including a new exact anchor-spacing and bed
+  placement check. `AB1.py` defaults to a new Python reference of the same
+  shared files, and its initial straight-cable allocation is approximately
+  319.19 N on C5-C8. Native pulley-aware initial allocation is about 310.47 N.
+- Seven artifact/browser groups: real-engine profile/output provenance;
+  exact anchor spans, bed placement and preserved bed-frame paths; all 50
+  heights/footprint/world transforms; full assessment residuals and statuses;
+  embedded frame/pose/layer checks; playback/pause/reset; mobile fit with
+  no page errors, warnings or external requests.
+- Desktop and mobile screenshots were visually checked. Existing
+  Playwright/Edge was reused because the Browser plugin was unavailable.
+  Evidence is `build/offline/qa/ab1-frame-5004-1793268176947/results.json`,
+  with `verify-ab1-frame-5004.log` and `ab1-frame-5004-slice-success.log`
+  in the parent QA directory. No C++ rebuild or dependency change was needed.
+
+Earlier profiles and artifacts remain snapshots. Active controller files
+retain SHA-256
+`3b39535a98935345005c4b7955706db0918b72b06faf0da4c7868cac2ee59f5e`.
+No hardware was operated. See the
+[reference profile guide](../config/ab1-frame-5004x5004x2305/README.md).
+
+## AB1 cube: 10 mm layers — 2026-10-29
+
+The user requested 10 mm printing layers and approved a 12 mm demo nozzle
+and bead width. New `config/cube-500mm-10mm-layers.ini` sets both
+`layer_height` and `first_layer_height` to 10, with 12 mm nozzle, global,
+first-layer and external-perimeter widths. The existing 500 mm STL is resliced
+without scaling or G-code filtering. Other recipe settings retain their
+demonstration values; the hollow single-perimeter shell has no infill or caps.
+
+`tools/Invoke-CdprSlice.ps1` accepts `-PlanningStage geometrically_checked`
+for AB1's untimed geometry workflow and records the stage in its receipt.
+The default remains `timed`; the new parameter is appended to preserve earlier
+positional parameters. Existing producer guards and immutable output behavior
+remain. No C++ build, dependency or controller change was needed.
+
+Real PrusaSlicer 2.9.6 and Release native planner runs produced these new files:
+
+| Output in `out/` | Purpose |
+| --- | --- |
+| `ab1-cube-500mm-10mm-layers-20261029.gcode` | Unmodified engine output |
+| `ab1-cube-500mm-10mm-layers-20261029.json` | Geometrically checked job |
+| `ab1-cube-500mm-10mm-layers-20261029.html` | Geometry preview |
+| `ab1-cube-500mm-10mm-layers-20261029.receipt.json` | STL/profile/tool/config/output provenance |
+| `ab1-cube-500mm-10mm-layers-report-20261029.json` | Separate mechanics assessment |
+| `ab1-cube-500mm-10mm-layers-mechanics-20261029.html` | Current preview including mechanics |
+
+The result has exactly **50 deposition heights: 10,20,...,500 mm**, 303 motions
+and 314 total operations. Centerlines span +/-244 mm in X/Y, accounting for
+the 6 mm nominal half-bead width inside the unchanged 500 mm cube. Bed
+registration, AB1 rail-face attachments, CoG/nozzle transforms and rail states
+are unchanged. Initial EE Z is -1.31 m, first-layer EE Z is -1.30 m and
+final-layer EE Z is -0.81 m. Job source/profile and receipt output hashes match.
+
+The 1,406-pose assessment retains rank 6 everywhere, verified static
+equilibrium and 16 mount contacts per pose. The largest returned allocation
+is about 1,368.20 N. Collision status remains `potential_collision` and
+working limits remain unevaluated; this remains an offline, untimed model.
+
+Validation passed:
+
+- All 28 existing STL workflow checks under Windows PowerShell 5.1, using
+  the Release planner. These retain default timed behavior, producer rejection,
+  input/path handling, provenance and overwrite refusal checks.
+- Six focused artifact/browser groups: real-engine profile/output bindings;
+  all 50 geometric heights/footprint/registration; mechanics bindings and
+  residuals; first/final layer display and EE poses; Play/Pause/Reset;
+  mobile fit with no page errors, warnings or external requests.
+- Desktop screenshots at 1440x1040 and mobile at 390x844 were visually checked.
+  Installed Playwright/Edge was reused; the Browser plugin was unavailable.
+  Evidence: `build/offline/qa/ab1-10mm-1793266987154/results.json`,
+  `verify-ab1-10mm-layers.log`, `ab1-10mm-slice.log` and
+  `ab1-10mm-wrapper-regression.log` in the same QA directory.
+
+Previous 0.8 mm profiles and previews remain snapshots. Root/bin controller
+configurations and the Python geometry reference are unchanged; no hardware
+was operated. See the [current commands](../config/ab1-rail-face-mounts/README.md).
+
+## Confirmed aluminum rail-face mounts — 2026-10-29
+
+The user confirmed the annotated sketch's hole centers, in EE-local metres:
+C1-C4 [X=+/-0.10, Y=+/-0.20, Z=+0.27], C5-C8
+[X=+/-0.18, Y=+/-0.20, Z=-0.27], retaining the existing cable index order.
+These are centers on the outer Y faces of the 40 mm aluminum sections.
+The 400 x 400 x 580 mm body, centered CoG, nozzle [0,0,-0.39] m, bed,
+initial EE position, frame anchors, routing and zero rails remain unchanged.
+
+The new `config/ab1-rail-face-mounts/` contains the shared robot, planner,
+calibration, limits and physical files plus a usage guide. Geometry SHA-256:
+`b9202872947cba9e7920be78fd6d23807786696705a06dd7175aa213a7580dbb`.
+`pyCDPR/config/ab1-rail-face-mounts.json` references these same files and
+`pyCDPR/AB1.py` now uses it by default. The previous profiles remain intact.
+
+The Release CLI completed geometric planning and mechanics assessment, producing:
+
+| New output in `out/` | Purpose |
+| --- | --- |
+| `ab1-cube-500mm-rail-face-mounts-20261029.json` | Geometry-bound job, all 3,753 motions / 625 layers retained |
+| `ab1-cube-500mm-rail-face-mounts-report-20261029.json` | 17,506-pose mechanics assessment |
+| `ab1-cube-500mm-rail-face-mounts-20261029.html` | Standalone 3D preview with the new attachment points |
+
+All sampled wrench ranks are 6. Every returned allocation satisfies the
+mathematical 0..1700 N bounds; largest force and torque residuals are about
+1.10e-12 N and 3.83e-13 Nm. The largest returned allocation is 1,411.18 N,
+83.0% of breaking strength. It is a feasible static allocation, not a minimum
+required capacity, measured force, approved working load or dynamic result.
+Working-tension and pretension limits remain unevaluated.
+
+All poses count exactly 16 contacts, matching the intentional cable/member
+connections: one member at each upper point, three members at each lower
+point. No additional contact is counted, including the previous four crossing
+pairs. Four smallest-clearance contacts are retained per pose; all are upper
+mount contacts. The minimum clearance is -1 mm with zero attachment exclusion.
+The `potential_collision` status remains; no invented mounting clearance or
+warning suppression was introduced. This does not certify continuous clearance.
+
+Verification:
+
+- Fourteen Python regression tests passed, including a new check that all
+  holes are on the correct outer aluminum faces and section centers.
+  The default AB1 calculation reports the same geometry digest, rank 6 and
+  approximately 205.43 N on C5-C8 at the registered initial pose.
+- Nine artifact/browser groups passed: coordinate/body/CoG/nozzle/hash bindings;
+  exact face membership; all motions preserved; all sample bounds/residuals,
+  rank and contact counts; embedded points/layers; first-issue controls and
+  warnings; 3D/XZ/XY rendering; playback/final layer/reset; mobile layout and
+  no page errors, console warnings or external requests.
+- Evidence: `build/offline/qa/verify-ab1-rail-face-mounts.log` and
+  `build/offline/qa/ab1-rail-face-1793266211052/results.json`. Desktop
+  1440x1040, mobile 390x844. Screenshots, including the centered 3D and XY
+  canvas details, were visually inspected using installed Playwright/Edge;
+  the Browser plugin was unavailable. Capture scripts remain in ignored QA output.
+- C++ source did not change, so no rebuild was required. The Python backend
+  remains straight-cable; C++ retains pulley-aware geometry. Root/bin controller
+  configurations retain SHA-256
+  `3b39535a98935345005c4b7955706db0918b72b06faf0da4c7868cac2ee59f5e`.
+  No controller application or physical hardware was operated.
+
+See the [current shared profile and commands](../config/ab1-rail-face-mounts/README.md).
+
+## Upper EE inset and shared Python configuration — 2026-10-29
+
+Historical profile, superseded by the confirmed rail-face placement above.
+
+The user requested moving the upper EE attachment points horizontally inward
+by 100 mm from the edges and preparing configurations for both programs.
+The inset is 100 mm in each X/Y axis: C1-C4 become
+`[-.10,-.10,.29]`, `[.10,-.10,.29]`, `[.10,.10,.29]`, `[-.10,.10,.29]` m.
+Lower points, body, CoG, nozzle, frame anchors and routing retain their previous
+values. All 3,753 cube motions and their nozzle/EE coordinates are unchanged.
+
+New versioned profile: `config/ab1-top-inset-100mm/`, containing `robot.json`,
+`planner.json`, `calibration.json`, `limits.json`, `physical.json` and a usage
+guide. Robot SHA-256:
+`0428b3f4d9307d75bb8efbd690a7a59f1de68c2f7e0944f39248725d12415589`.
+The new `pyCDPR/config/ab1-top-inset-100mm.json` references the same planner and
+physical data. `pyCDPR/AB1.py` checks this digest, resolves the initial pose
+through the registered bed/nozzle transforms and runs the existing straight
+cable backend. It does not duplicate the geometry arrays or add dependencies.
+
+New artifact prefix: `out/ab1-cube-500mm-top-inset-100mm-20261029` for the
+geometric JSON and HTML. The separate assessment is
+`out/ab1-cube-500mm-top-inset-100mm-report-20261029.json`.
+The C++ CLI completed geometric planning and all 17,506 mechanics samples.
+Static gravity allocations satisfy residual checks at every sample under the
+ultimate-only bounds; working limits remain unevaluated. Potential contacts
+remain flagged at every sample, with recorded counts 16, 18 or 20. The initial
+center pose retains the four cable crossings and rank 5; the sampled rank set
+is {5,6}. The model retains the original 12 member envelopes; new upper mounts
+are unspecified. No clearance or hardware-readiness claim is made.
+
+Verification:
+
+- Thirteen Python tests passed, including three new shared-profile tests:
+  exact inset/lower coordinates and registration, configured load balance
+  with unknown working limits, and rejection of a changed geometry digest.
+- Eight artifact/browser groups passed: profile hashes/body/CoG/nozzle;
+  all motion geometry unchanged; full assessment residuals/statuses; embedded
+  upper points and 625 layers; issue seeking/labels/warnings; 3D and XZ views;
+  Play/Pause/final layer/Reset; mobile fit and no page errors/warnings/network.
+- Evidence: `build/offline/qa/ab1-top-inset-1793264448264/results.json` and
+  `build/offline/qa/verify-ab1-top-inset.log`. Desktop 1440x1040, mobile 390x844.
+  The 3D, XZ and mobile screenshots were visually checked. Existing
+  Playwright/Edge was used because the Browser plugin was unavailable.
+- C++ source was unchanged; no rebuild was required for this profile update.
+  Earlier snapshots were preserved. Root/bin controller configurations retain
+  their existing bytes. No controller or physical hardware was operated.
+
+The [profile guide](../config/ab1-top-inset-100mm/README.md) contains commands
+for both programs and explains the straight-cable/pulley model difference.
+
 ## Corner attachments, centred CoG and nozzle correction — 2026-10-29
 
 The user corrected the EE attachments to all eight corners of the 400 x 400 x

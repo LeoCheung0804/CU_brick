@@ -46,6 +46,15 @@ a separately verified planner configuration for real machine geometry. Slicing
 temperatures, feedrates and retractions in `prusa-cdpr.ini` are demo parameters,
 not calibrated material/hotend settings or robot operating limits.
 
+For the current AB1 500 mm cube, use `config/cube-500mm-10mm-layers.ini` and
+`-PlanningStage geometrically_checked`. This recipe uses 10 mm first/subsequent
+layers and the approved 12 mm demo nozzle/bead width. The stage option also
+records the selected stage in the receipt; omitting it retains the existing
+`timed` default. AB1's motion limits remain unknown, so its current example
+does not request timing. See the
+[AB1 proposal guide](../config/ab1-mount-standoff-5mm/README.md) for complete commands,
+including the separate mechanics assessment and preview.
+
 The command returns paths and creates four new files in `out/`:
 
 - `<run>.gcode`: unfiltered text output from PrusaSlicer.

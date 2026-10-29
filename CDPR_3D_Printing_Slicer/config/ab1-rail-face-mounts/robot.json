@@ -1,0 +1,126 @@
+{
+  "ModelName": "AB1",
+  "cableMotorNum": 8,
+  "railMotorNum": 4,
+  "pulleyRadius": 0.045,
+  "pulleyZdir": [
+    -1,
+    -1,
+    -1,
+    -1,
+    1,
+    1,
+    1,
+    1
+  ],
+  "frameAttachments": [
+    [
+      0,
+      0,
+      -1.8
+    ],
+    [
+      1.85,
+      0,
+      -1.8
+    ],
+    [
+      1.85,
+      1.85,
+      -1.8
+    ],
+    [
+      0,
+      1.85,
+      -1.8
+    ],
+    [
+      0,
+      0,
+      0
+    ],
+    [
+      1.85,
+      0,
+      0
+    ],
+    [
+      1.85,
+      1.85,
+      0
+    ],
+    [
+      0,
+      1.85,
+      0
+    ]
+  ],
+  "endEffectorAttachments": [
+    [
+      -0.1,
+      -0.2,
+      0.27
+    ],
+    [
+      0.1,
+      -0.2,
+      0.27
+    ],
+    [
+      0.1,
+      0.2,
+      0.27
+    ],
+    [
+      -0.1,
+      0.2,
+      0.27
+    ],
+    [
+      -0.18,
+      -0.2,
+      -0.27
+    ],
+    [
+      0.18,
+      -0.2,
+      -0.27
+    ],
+    [
+      0.18,
+      0.2,
+      -0.27
+    ],
+    [
+      -0.18,
+      0.2,
+      -0.27
+    ]
+  ],
+  "useIndividualCableScale": false,
+  "cableMotorScale": 815027.0614,
+  "cableMotorScaleIndividual": [
+    815027.0614,
+    815027.0614,
+    815027.0614,
+    815027.0614,
+    815027.0614,
+    815027.0614,
+    815027.0614,
+    815027.0614
+  ],
+  "endEffectorPosLimit": {
+    "x": -0.1,
+    "y": 2,
+    "z": -0.02,
+    "roll": 13.8,
+    "pitch": -3.75,
+    "yaw": 0.3
+  },
+  "endEffVelLmt": 0.2,
+  "slicer_geometry_provenance": {
+    "source": "../ab1-top-inset-100mm/robot.json",
+    "source_sha256": "0428b3f4d9307d75bb8efbd690a7a59f1de68c2f7e0944f39248725d12415589",
+    "correction": "User-confirmed annotated sketch: holes centered on outer Y faces of 40x40 mm aluminum. Upper C1-C4: X=+/-0.10, Y=+/-0.20, Z=+0.27 m, 100 mm along each top rail from its end. Lower C5-C8: X=+/-0.18, Y=+/-0.20, Z=-0.27 m, corner-face centers. Outer body 400x400x580 mm, centered origin/CoG, nozzle Z=-0.39 m, original frame anchors/routing and zero rails retained. Shared offline geometry."
+  }
+}

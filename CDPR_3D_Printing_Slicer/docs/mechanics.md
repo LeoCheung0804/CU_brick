@@ -5,7 +5,85 @@ model-bound job and export an interactive 3D view. This adds sampled geometric
 contact screening and gravity-load equilibrium calculations. It does not change
 the job's stage, recorded validation checks or `hardware_ready: false`.
 
-## Current AB1 example
+## Current AB1 proposal: cable centers 5 mm outside the rail faces
+
+Open `out/ab1-cube-500mm-standoff-5mm-10mm-mechanics-20261029.html`.
+The [shared proposal and commands](../config/ab1-mount-standoff-5mm/README.md)
+move only the EE-local Y coordinate of every free-cable fixing center from
++/-0.200 to +/-0.205 m. Upper X/Z remain +/-0.100/+0.270 m and lower X/Z
+remain +/-0.180/-0.270 m. The confirmed holes stay on the rails; a standoff
+bracket or eyelet would connect each hole to the proposed cable center.
+Its solid geometry, fasteners, local cable connection and strength are not
+modeled or verified. The proposal is explicitly marked synthetic and uses
+model ID `PROPOSED-AB1-5mm-outward-mounts-20261029`.
+
+The original rail-face model counted the 1 mm cable-radius endcaps touching
+their supporting aluminum as collisions. Moving a hole along the same face
+would retain this contact. With the proposed 5 mm outward cable centers, the
+same collision checker finds **zero contacts at all 1,406 sampled poses**, with
+minimum clearance **4 mm**. All twelve EE member boxes, 1 mm cable radius,
+zero extra clearance and zero attachment exclusion are unchanged.
+
+Frame anchors, cable routing, body, CoG, nozzle, bed, zero rails and the complete
+10 mm-layer toolpath are unchanged. All poses retain rank 6 and a static
+gravity-balancing allocation under mathematical 0..1700 N bounds. The largest
+returned allocation is 1027.31 N. Pretension and allowed working tensions remain
+unknown, so the tension warning stays. Breaking strength is not a working limit.
+
+Both the native planner and `pyCDPR/AB1.py` use the new shared files, pinned to
+robot SHA-256 `8be5ed5105f1a92263f591b0d9323759da664444e26c346579d6dc1efcb20c0c`.
+Python still uses straight cables and C++ uses pulley-aware geometry.
+The sampled result excludes the proposed mounting hardware and does not
+establish continuous clearance or physical load capacity. Hardware readiness
+remains false. The reference profile and its output below are preserved.
+
+## Reference AB1 profile: holes on the aluminum rail faces
+
+The reference preview is
+`out/ab1-cube-500mm-frame-5004-2305-10mm-mechanics-20261029.html`.
+Outer anchors now span X/Y 0..5.004 m and Z -2.305..0 m, matching the user's
+5004 x 5004 x 2305 mm separation. The bed is recentered at
+[2.502,2.502,-2.205] m, 100 mm above the lower anchors; initial EE position is
+[2.502,2.502,-1.815] m. The anchor bounding box is used only as an offline
+geometric enclosure; approved working workspace and live registration remain unknown.
+The 500 mm cube
+uses 10 mm first/subsequent layers and a user-approved 12 mm demo nozzle/bead,
+giving 50 layers and 303 motions. The user confirmed hole
+centers on the outer Y faces of the 40 mm aluminum rails. C1-C4 are
+[X=+/-0.10, Y=+/-0.20, Z=+0.27] m, 100 mm along the top rails from each end.
+C5-C8 are [X=+/-0.18, Y=+/-0.20, Z=-0.27] m on the lower corner faces. Body dimensions,
+cable order/routing, centered CoG and nozzle Z=-0.39 m are retained.
+The nozzle remains 100 mm below the outer body bottom;
+its position is independent of the changed hole heights.
+
+The versioned profile in `config/ab1-frame-5004x5004x2305/` supplies the C++ planner
+and the sibling Python configuration. `pyCDPR/config/ab1-frame-5004x5004x2305.json`
+references those same files, and `pyCDPR/AB1.py` validates their geometry digest.
+Both programs use source SHA-256
+`d374a603cacf41b84009e5f82524e8e0fd369563d5cbd5724ccd68e7d516a83f`.
+The Python backend uses straight cables; the C++ assessment includes pulleys.
+
+All 1,406 sampled poses have rank 6 and a gravity-balancing allocation.
+The largest returned allocation is 979.12 N, about 57.6% of breaking strength;
+this is not an approved working load. Each pose retains 16 capsule/member
+contacts at the mounts (four upper single-member contacts and twelve lower
+corner contacts). No additional contact is counted, including the previous
+four crossing cable pairs. The four retained smallest-clearance contacts are
+lower mount contacts at about -1 mm. Zero attachment exclusion preserves the
+`potential_collision` warning. Working-tension/pretension limits remain unknown,
+and hardware readiness remains false. This sampled model does not certify
+continuous clearance or detailed mounting hardware.
+
+See the [shared profile and commands](../config/ab1-frame-5004x5004x2305/README.md).
+The preceding smaller-frame, 10 mm-layer example remains in
+`out/ab1-cube-500mm-10mm-layers-mechanics-20261029.html`.
+The previous 0.8 mm / 625-layer rail-face example remains in
+`out/ab1-cube-500mm-rail-face-mounts-20261029.html` with its original report.
+The preceding [upper-inset profile](../config/ab1-top-inset-100mm/README.md)
+placed the upper points in the open top; it is retained as a historical snapshot.
+The following section documents the earlier all-corners example.
+
+## Previous AB1 example: all eight corners
 
 Open `out/ab1-cube-500mm-corners-review-20261029.html`. It contains the original
 500 mm cube toolpath, registered to the user-corrected AB1 slicer geometry, with

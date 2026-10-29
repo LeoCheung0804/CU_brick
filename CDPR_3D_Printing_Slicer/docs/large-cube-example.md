@@ -5,12 +5,37 @@ from (0,0,0) to (500,500,500). Interpret STL coordinates as millimetres. The fil
 has 12 triangles, 8 unique vertices, 18 mesh edges each shared by two faces,
 and signed enclosed volume 125,000,000 mm³. Its three dimensions are all 50 cm.
 
+## Current AB1 example: 10 mm layers
+
+The current profile is `config/cube-500mm-10mm-layers.ini`: 10 mm first and
+subsequent layers, with the user-approved 12 mm demo nozzle and bead width.
+It produces 50 deposition heights at 10,20,...,500 mm, using the proposed
+5 mm outward cable fixings, centered CoG and nozzle 100 mm below the EE.
+The reference rail holes stay on the aluminum; standoff hardware remains
+unmodeled and unverified, and the proposal is marked synthetic.
+The corrected outer anchor spacing is 5004 x 5004 x 2305 mm. The cube is
+centered at world X=Y=2.502 m, with the bed at Z=-2.205 m, 100 mm above
+the lower anchors. Its hollow one-perimeter
+recipe has no infill or top/bottom caps; deposited centerlines span -244..244 mm
+in X/Y, 6 mm inward to allow for the nominal bead width.
+
+Open `out/ab1-cube-500mm-standoff-5mm-10mm-mechanics-20261029.html` and select any of
+the 50 layers. The job has 303 motions / 314 operations. The separate
+1,406-pose assessment retains rank 6 and finds zero contacts, with a minimum
+modeled clearance of 4 mm. Working-tension limits remain unknown.
+This is an untimed offline example; its demo extrusion
+settings do not establish real print-head calibration.
+
+See the [current AB1 commands](../config/ab1-mount-standoff-5mm/README.md) to reslice
+and assess the model using `-PlanningStage geometrically_checked`. The following
+sections retain the original synthetic 0.8 mm examples and their results.
+
 The default 100 x 100 x 100 mm export volume cannot contain it. A real test with
 that profile returned `All objects are outside of the print volume.` from
 PrusaSlicer, with exit status zero and no G-code. The wrapper now detects this
 case and reports the engine's stdout/stderr instead of a missing-file error.
 
-## Run the large demo
+## Earlier synthetic demo: 0.8 mm layers
 
 The separate project-local demo profiles created for this checkout are:
 
