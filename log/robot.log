@@ -17,3 +17,401 @@
 [126/7/27: 17:7:29][Info]All motors, all brakes and gripper connected success.
 [126/7/27: 17:7:29][Info]Reading Last Pos from pos log file
 [126/7/27: 17:7:35][Info]Robot Disconnected.
+[126/8/17: 15:34:11][Info]Reading robot config.
+[126/8/17: 15:34:16][Info]Connecting to robot.
+[126/8/17: 15:34:16][Info]All motors, all brakes and gripper connected success.
+[126/8/17: 15:34:16][Info]Reading Last Pos from pos log file
+[126/8/17: 15:38:8][Info]Reading robot config.
+[126/8/17: 15:38:13][Info]Connecting to robot.
+[126/8/17: 15:38:13][Info]All motors, all brakes and gripper connected success.
+[126/8/17: 15:38:13][Info]Reading Last Pos from pos log file
+[126/8/17: 17:27:12][Info]Reading robot config.
+[126/8/17: 17:27:12][Info]Connecting to robot.
+[126/8/17: 17:27:12][Error]Robot initialization failed.
+[126/8/17: 17:27:15][Info]Reading robot config.
+[126/8/17: 17:27:15][Info]Connecting to robot.
+[126/8/17: 17:27:15][Error]Robot initialization failed.
+[126/8/17: 17:27:34][Info]Reading robot config.
+[126/8/17: 17:27:34][Info]Connecting to robot.
+[126/8/17: 17:27:34][Error]Robot initialization failed.
+[126/8/17: 17:27:41][Info]Reading robot config.
+[126/8/17: 17:27:49][Info]Connecting to robot.
+[126/8/17: 17:27:49][Info]All motors, all brakes and gripper connected success.
+[126/8/17: 17:27:49][Info]Reading Last Pos from pos log file
+[126/8/17: 17:54:0][Info]Robot Disconnected.
+[126/8/19: 16:26:15][Info]Reading robot config.
+[126/8/19: 16:26:15][Info]Connecting to robot.
+[126/8/19: 16:26:15][Error]Robot initialization failed.
+[126/8/19: 16:28:30][Info]Reading robot config.
+[126/8/19: 16:28:39][Info]Connecting to robot.
+[126/8/19: 16:28:39][Info]All motors, all brakes and gripper connected success.
+[126/8/19: 16:28:39][Info]Reading Last Pos from pos log file
+[126/8/19: 16:30:31][Info]Robot Disconnected.
+[126/8/19: 16:32:36][Info]Reading robot config.
+[126/8/19: 16:32:41][Info]Connecting to robot.
+[126/8/19: 16:32:41][Info]All motors, all brakes and gripper connected success.
+[126/8/19: 16:32:41][Info]Reading Last Pos from pos log file
+[126/8/19: 16:33:38][Pos]x: 8.240000, y: 6.510000, z: -2.700000, yaw: 0.000000, pitch: 0.000000, roll: -0.023700, cable 0 : 8.240000, cable 1 : 6.510000, cable 2 : -2.700000, cable 3 : 0.000000
+[126/8/19: 16:33:59][Error]Robot connection lost; leaving the main menu.
+[126/8/19: 16:33:59][Error]Skipping recovery-file save because the robot is not fully connected.
+[126/8/19: 16:33:59][Info]Robot Disconnected.
+[126/8/19: 16:34:2][Info]Reading robot config.
+[126/8/19: 16:34:7][Info]Connecting to robot.
+[126/8/19: 16:34:7][Info]All motors, all brakes and gripper connected success.
+[126/8/19: 16:34:7][Info]Reading Last Pos from pos log file
+[126/8/19: 16:35:6][Pos]x: 8.240000, y: 6.510000, z: -2.700000, yaw: 0.000000, pitch: 0.000000, roll: -0.023700, cable 0 : 8.240000, cable 1 : 6.510000, cable 2 : -2.700000, cable 3 : 0.000000
+[126/8/19: 16:35:6][Warning]New Position is beyond robot limit.
+[126/8/19: 16:35:50][Info]Robot Disconnected.
+[126/8/19: 16:35:52][Info]Reading robot config.
+[126/8/19: 16:35:57][Info]Connecting to robot.
+[126/8/19: 16:35:57][Info]All motors, all brakes and gripper connected success.
+[126/8/19: 16:35:57][Info]Reading Last Pos from pos log file
+[126/8/19: 16:40:8][Pos]x: 1.000000, y: 1.000000, z: -1.000000, yaw: 0.000000, pitch: 0.000000, roll: -0.023700, cable 0 : 1.000000, cable 1 : 1.000000, cable 2 : -1.000000, cable 3 : 0.000000
+[126/8/19: 16:40:55][Pos]x: 1.100000, y: 1.100000, z: -1.000000, yaw: 0.000000, pitch: 0.000000, roll: -0.023700, cable 0 : 1.100000, cable 1 : 1.100000, cable 2 : -1.000000, cable 3 : 0.000000
+[126/8/19: 16:44:42][Pos]x: 1.100000, y: 1.100000, z: -1.000000, yaw: 0.000000, pitch: 0.000000, roll: -0.023700, cable 0 : 1.100000, cable 1 : 1.100000, cable 2 : -1.000000, cable 3 : 0.000000
+[126/8/19: 16:46:58][Pos]x: 1.100000, y: 1.100000, z: -1.000000, yaw: 0.000000, pitch: 0.000000, roll: -0.023700, cable 0 : 1.100000, cable 1 : 1.100000, cable 2 : -1.000000, cable 3 : 0.000000
+[126/8/19: 16:47:48][Pos]x: 1.100000, y: 1.100000, z: -1.000000, yaw: 0.000000, pitch: 0.000000, roll: -0.023700, cable 0 : 1.100000, cable 1 : 1.100000, cable 2 : -1.000000, cable 3 : 0.000000
+[126/8/19: 16:50:8][Info]Reading robot config.
+[126/8/19: 16:50:13][Info]Connecting to robot.
+[126/8/19: 16:50:13][Info]All motors, all brakes and gripper connected success.
+[126/8/19: 16:50:13][Info]Reading Last Pos from pos log file
+[126/8/19: 16:50:34][Pos]x: 1.000000, y: 1.000000, z: -0.800000, yaw: 0.000000, pitch: 0.000000, roll: -0.023700, cable 0 : 1.000000, cable 1 : 1.000000, cable 2 : -0.800000, cable 3 : 0.000000
+[126/8/19: 16:51:7][Pos]x: 1.000000, y: 1.000000, z: -0.800000, yaw: 0.000000, pitch: 0.000000, roll: -0.023700, cable 0 : 1.000000, cable 1 : 1.000000, cable 2 : -0.800000, cable 3 : 0.000000
+[126/8/19: 16:58:51][Pos]x: 1.000000, y: 1.000000, z: -0.800000, yaw: 0.000000, pitch: 0.000000, roll: -0.023700, cable 0 : 1.000000, cable 1 : 1.000000, cable 2 : -0.800000, cable 3 : 0.000000
+[126/8/19: 17:4:29][Pos]x: 1.000000, y: 1.000000, z: -0.800000, yaw: 0.010000, pitch: 0.000000, roll: -0.023700, cable 0 : 1.000000, cable 1 : 1.000000, cable 2 : -0.800000, cable 3 : 0.010000
+[126/8/19: 17:4:46][Pos]x: 1.000000, y: 1.000000, z: -0.800000, yaw: 0.010000, pitch: 0.000000, roll: -0.023700, cable 0 : 1.000000, cable 1 : 1.000000, cable 2 : -0.800000, cable 3 : 0.010000
+[126/8/19: 17:4:58][Pos]x: 1.000000, y: 1.000000, z: -0.800000, yaw: 0.010000, pitch: 0.000000, roll: -0.023700, cable 0 : 1.000000, cable 1 : 1.000000, cable 2 : -0.800000, cable 3 : 0.010000
+[126/8/19: 17:5:19][Pos]x: 1.000000, y: 1.000000, z: -0.800000, yaw: 0.000000, pitch: 0.010000, roll: -0.023700, cable 0 : 1.000000, cable 1 : 1.000000, cable 2 : -0.800000, cable 3 : 0.000000
+[126/8/19: 17:29:27][Info]Robot Disconnected.
+[126/8/19: 17:29:30][Info]Reading robot config.
+[126/8/19: 17:29:35][Info]Connecting to robot.
+[126/8/19: 17:29:35][Info]All motors, all brakes and gripper connected success.
+[126/8/19: 17:29:35][Info]Reading Last Pos from pos log file
+[126/8/19: 17:29:58][Info]Robot Disconnected.
+[126/8/19: 17:29:59][Info]Reading robot config.
+[126/8/19: 17:30:4][Info]Connecting to robot.
+[126/8/19: 17:30:4][Info]All motors, all brakes and gripper connected success.
+[126/8/19: 17:30:4][Info]Reading Last Pos from pos log file
+[126/8/19: 17:31:12][Info]Robot Disconnected.
+[126/8/19: 17:31:14][Info]Reading robot config.
+[126/8/19: 17:31:18][Info]Connecting to robot.
+[126/8/19: 17:31:18][Info]All motors, all brakes and gripper connected success.
+[126/8/19: 17:31:19][Info]Reading Last Pos from pos log file
+[126/8/19: 17:31:57][Pos]x: 1.050000, y: 1.050000, z: -0.890000, yaw: 0.000000, pitch: 0.000000, roll: -0.023700, cable 0 : 1.050000, cable 1 : 1.050000, cable 2 : -0.890000, cable 3 : 0.000000
+[126/8/19: 17:33:9][Info]Robot Disconnected.
+[126/8/19: 17:33:11][Info]Reading robot config.
+[126/8/19: 17:33:16][Info]Connecting to robot.
+[126/8/19: 17:33:16][Info]All motors, all brakes and gripper connected success.
+[126/8/19: 17:33:16][Info]Reading Last Pos from pos log file
+[126/8/19: 17:35:15][Info]Robot Disconnected.
+[126/8/19: 17:35:18][Info]Reading robot config.
+[126/8/19: 17:35:23][Info]Connecting to robot.
+[126/8/19: 17:35:23][Info]All motors, all brakes and gripper connected success.
+[126/8/19: 17:35:23][Info]Reading Last Pos from pos log file
+[126/8/19: 17:39:49][Pos]x: 1.050000, y: 1.050000, z: -0.890000, yaw: 0.000000, pitch: 0.000000, roll: -0.023700, cable 0 : 1.050000, cable 1 : 1.050000, cable 2 : -0.890000, cable 3 : 0.000000
+[126/8/19: 17:46:25][Pos]x: 1.050000, y: 1.050000, z: -0.875000, yaw: 0.010000, pitch: 0.000000, roll: -0.023700, cable 0 : 1.050000, cable 1 : 1.050000, cable 2 : -0.875000, cable 3 : 0.010000
+[126/8/19: 17:46:38][Pos]x: 1.050000, y: 1.050000, z: -0.875000, yaw: 0.010000, pitch: 0.000000, roll: -0.023700, cable 0 : 1.050000, cable 1 : 1.050000, cable 2 : -0.875000, cable 3 : 0.010000
+[126/8/19: 17:47:18][Pos]x: 1.050000, y: 1.050000, z: -0.875000, yaw: 0.000000, pitch: 0.000000, roll: -0.023700, cable 0 : 1.050000, cable 1 : 1.050000, cable 2 : -0.875000, cable 3 : 0.000000
+[126/8/19: 18:17:7][Info]Robot Disconnected.
+[126/8/20: 16:15:23][Info]Reading robot config.
+[126/8/20: 16:15:23][Info]Connecting to robot.
+[126/8/20: 16:15:23][Error]Robot initialization failed.
+[126/8/20: 16:15:25][Info]Reading robot config.
+[126/8/20: 16:15:25][Info]Connecting to robot.
+[126/8/20: 16:15:25][Error]Robot initialization failed.
+[126/8/20: 16:17:5][Info]Reading robot config.
+[126/8/20: 16:17:14][Info]Connecting to robot.
+[126/8/20: 16:17:14][Info]All motors, all brakes and gripper connected success.
+[126/8/20: 16:17:14][Info]Reading Last Pos from pos log file
+[126/8/20: 16:22:17][Info]Reading robot config.
+[126/8/20: 16:22:22][Info]Connecting to robot.
+[126/8/20: 16:22:22][Info]All motors, all brakes and gripper connected success.
+[126/8/20: 16:22:22][Info]Reading Last Pos from pos log file
+[126/8/20: 16:37:35][Error]Robot connection lost; leaving the main menu.
+[126/8/20: 16:37:35][Error]Skipping recovery-file save because the robot is not fully connected.
+[126/8/20: 16:37:36][Info]Robot Disconnected.
+[126/8/20: 16:37:39][Info]Reading robot config.
+[126/8/20: 16:37:43][Info]Connecting to robot.
+[126/8/20: 16:37:43][Info]All motors, all brakes and gripper connected success.
+[126/8/20: 16:37:44][Info]Reading Last Pos from pos log file
+[126/8/20: 16:38:0][Error]Robot connection lost; leaving the main menu.
+[126/8/20: 16:38:0][Error]Skipping recovery-file save because the robot is not fully connected.
+[126/8/20: 16:38:0][Info]Robot Disconnected.
+[126/8/20: 16:38:2][Info]Reading robot config.
+[126/8/20: 16:38:7][Info]Connecting to robot.
+[126/8/20: 16:38:7][Info]All motors, all brakes and gripper connected success.
+[126/8/20: 16:38:7][Info]Reading Last Pos from pos log file
+[126/8/20: 16:43:30][Pos]x: 1.050000, y: 1.050000, z: -0.875000, yaw: 0.000000, pitch: 0.000000, roll: -0.023700, cable 0 : 1.050000, cable 1 : 1.050000, cable 2 : -0.875000, cable 3 : 0.000000
+[126/8/20: 16:44:58][Info]Robot Disconnected.
+[126/8/20: 16:46:51][Info]Reading robot config.
+[126/8/20: 16:46:56][Info]Connecting to robot.
+[126/8/20: 16:46:56][Info]All motors, all brakes and gripper connected success.
+[126/8/20: 16:46:56][Info]Reading Last Pos from pos log file
+[126/8/20: 16:47:0][Pos]x: 1.050000, y: 1.050000, z: -0.875000, yaw: 0.000000, pitch: 0.000000, roll: -0.023700, cable 0 : 1.050000, cable 1 : 1.050000, cable 2 : -0.875000, cable 3 : 0.000000
+[126/8/20: 16:49:16][Pos]x: 1.050000, y: 1.050000, z: -0.875000, yaw: 0.000000, pitch: 0.000000, roll: -0.023700, cable 0 : 1.050000, cable 1 : 1.050000, cable 2 : -0.875000, cable 3 : 0.000000
+[126/8/20: 16:51:15][Info]Robot Disconnected.
+[126/8/20: 16:52:4][Info]Reading robot config.
+[126/8/20: 16:52:9][Info]Connecting to robot.
+[126/8/20: 16:52:9][Info]All motors, all brakes and gripper connected success.
+[126/8/20: 16:52:9][Info]Reading Last Pos from pos log file
+[126/8/20: 16:52:16][Info]Robot Disconnected.
+[126/8/20: 16:52:49][Info]Reading robot config.
+[126/8/20: 16:52:54][Info]Connecting to robot.
+[126/8/20: 16:52:54][Info]All motors, all brakes and gripper connected success.
+[126/8/20: 16:52:54][Info]Reading Last Pos from pos log file
+[126/8/20: 16:52:59][Pos]x: 0.900000, y: 0.900000, z: -0.800000, yaw: 0.000000, pitch: 0.000000, roll: -0.023700, cable 0 : 0.900000, cable 1 : 0.900000, cable 2 : -0.800000, cable 3 : 0.000000
+[126/8/20: 16:53:32][Pos]x: 0.900000, y: 0.900000, z: -0.800000, yaw: 0.000000, pitch: 0.000000, roll: -0.023700, cable 0 : 0.900000, cable 1 : 0.900000, cable 2 : -0.800000, cable 3 : 0.000000
+[126/8/20: 16:53:55][Info]Robot Disconnected.
+[126/8/20: 16:53:57][Info]Reading robot config.
+[126/8/20: 16:54:2][Info]Connecting to robot.
+[126/8/20: 16:54:2][Info]All motors, all brakes and gripper connected success.
+[126/8/20: 16:54:2][Info]Reading Last Pos from pos log file
+[126/8/20: 16:55:51][Pos]x: 0.900000, y: 0.900000, z: -0.800000, yaw: 0.000000, pitch: 0.000000, roll: -0.023700, cable 0 : 0.900000, cable 1 : 0.900000, cable 2 : -0.800000, cable 3 : 0.000000
+[126/8/20: 16:58:30][Pos]x: 0.900000, y: 0.900000, z: -0.800000, yaw: 0.000000, pitch: 0.000000, roll: -0.023700, cable 0 : 0.900000, cable 1 : 0.900000, cable 2 : -0.800000, cable 3 : 0.000000
+[126/8/20: 16:59:24][Pos]x: 0.900000, y: 0.900000, z: -0.800000, yaw: 0.000000, pitch: 0.000000, roll: -0.023700, cable 0 : 0.900000, cable 1 : 0.900000, cable 2 : -0.800000, cable 3 : 0.000000
+[126/8/20: 17:2:14][Pos]x: 0.900000, y: 0.900000, z: -0.800000, yaw: 0.000000, pitch: 0.000000, roll: -0.023700, cable 0 : 0.900000, cable 1 : 0.900000, cable 2 : -0.800000, cable 3 : 0.000000
+[126/8/20: 17:8:26][Pos]x: 0.900000, y: 0.900000, z: -0.800000, yaw: 0.000000, pitch: 0.000000, roll: -0.023700, cable 0 : 0.900000, cable 1 : 0.900000, cable 2 : -0.800000, cable 3 : 0.000000
+[126/8/20: 17:8:51][Info]Robot Disconnected.
+[126/8/20: 17:8:55][Info]Reading robot config.
+[126/8/20: 17:9:0][Info]Connecting to robot.
+[126/8/20: 17:9:0][Info]All motors, all brakes and gripper connected success.
+[126/8/20: 17:9:0][Info]Reading Last Pos from pos log file
+[126/8/20: 17:10:34][Pos]x: 0.900000, y: 0.900000, z: -0.800000, yaw: 0.000000, pitch: 0.000000, roll: -0.023700, cable 0 : 0.900000, cable 1 : 0.900000, cable 2 : -0.800000, cable 3 : 0.000000
+[126/8/20: 17:11:20][Pos]x: 0.900000, y: 0.900000, z: -0.800000, yaw: 0.000000, pitch: 0.000000, roll: -0.023700, cable 0 : 0.900000, cable 1 : 0.900000, cable 2 : -0.800000, cable 3 : 0.000000
+[126/8/20: 17:11:40][Error]Position-file calibration failed; aborting controls.
+[126/8/20: 17:11:40][Error]Robot connection lost; leaving the main menu.
+[126/8/20: 17:11:40][Error]Skipping recovery-file save because the robot is not fully connected.
+[126/8/20: 17:11:40][Info]Robot Disconnected.
+[126/8/20: 17:11:42][Info]Reading robot config.
+[126/8/20: 17:11:47][Info]Connecting to robot.
+[126/8/20: 17:11:47][Info]All motors, all brakes and gripper connected success.
+[126/8/20: 17:11:47][Info]Reading Last Pos from pos log file
+[126/8/20: 17:13:59][Pos]x: 0.900000, y: 0.900000, z: -0.800000, yaw: 0.000000, pitch: 0.000000, roll: -0.023700, cable 0 : 0.900000, cable 1 : 0.900000, cable 2 : -0.800000, cable 3 : 0.000000
+[126/8/20: 17:16:21][Pos]x: 0.900000, y: 0.900000, z: -0.800000, yaw: 0.000000, pitch: 0.000000, roll: -0.023700, cable 0 : 0.900000, cable 1 : 0.900000, cable 2 : -0.800000, cable 3 : 0.000000
+[126/8/20: 17:16:44][Info]Robot Disconnected.
+[126/8/20: 17:16:46][Info]Reading robot config.
+[126/8/20: 17:16:51][Info]Connecting to robot.
+[126/8/20: 17:16:51][Info]All motors, all brakes and gripper connected success.
+[126/8/20: 17:16:51][Info]Reading Last Pos from pos log file
+[126/8/20: 17:17:9][Info]Robot Disconnected.
+[126/8/20: 17:17:11][Info]Reading robot config.
+[126/8/20: 17:17:15][Info]Connecting to robot.
+[126/8/20: 17:17:15][Info]All motors, all brakes and gripper connected success.
+[126/8/20: 17:17:16][Info]Reading Last Pos from pos log file
+[126/8/20: 17:24:19][Pos]x: 0.900000, y: 0.900000, z: -0.900000, yaw: 0.000000, pitch: 0.000000, roll: -0.023700, cable 0 : 0.900000, cable 1 : 0.900000, cable 2 : -0.900000, cable 3 : 0.000000
+[126/8/20: 17:40:44][Pos]x: 0.900000, y: 0.900000, z: -0.900000, yaw: 0.010000, pitch: 0.000000, roll: -0.023700, cable 0 : 0.900000, cable 1 : 0.900000, cable 2 : -0.900000, cable 3 : 0.010000
+[126/8/20: 17:40:55][Pos]x: 0.900000, y: 0.900000, z: -0.900000, yaw: 0.010000, pitch: 0.000000, roll: -0.023700, cable 0 : 0.900000, cable 1 : 0.900000, cable 2 : -0.900000, cable 3 : 0.010000
+[126/8/20: 17:41:5][Pos]x: 0.900000, y: 0.900000, z: -0.900000, yaw: 0.010000, pitch: 0.000000, roll: -0.023700, cable 0 : 0.900000, cable 1 : 0.900000, cable 2 : -0.900000, cable 3 : 0.010000
+[126/8/20: 17:41:14][Pos]x: 0.900000, y: 0.900000, z: -0.900000, yaw: 0.010000, pitch: 0.000000, roll: -0.023700, cable 0 : 0.900000, cable 1 : 0.900000, cable 2 : -0.900000, cable 3 : 0.010000
+[126/8/20: 17:41:38][Pos]x: 0.900000, y: 0.900000, z: -0.900000, yaw: 0.000000, pitch: 0.010000, roll: -0.023700, cable 0 : 0.900000, cable 1 : 0.900000, cable 2 : -0.900000, cable 3 : 0.000000
+[126/8/20: 17:43:13][Info]Reading robot config.
+[126/8/20: 17:43:17][Info]Connecting to robot.
+[126/8/20: 17:43:17][Info]All motors, all brakes and gripper connected success.
+[126/8/20: 17:43:17][Info]Reading Last Pos from pos log file
+[126/8/20: 17:43:28][Pos]x: 0.900000, y: 0.900000, z: -0.900000, yaw: 0.000000, pitch: -0.020000, roll: -0.023700, cable 0 : 0.900000, cable 1 : 0.900000, cable 2 : -0.900000, cable 3 : 0.000000
+[126/8/20: 17:43:48][Pos]x: 0.900000, y: 0.900000, z: -0.900000, yaw: 0.000000, pitch: -0.020000, roll: -0.023700, cable 0 : 0.900000, cable 1 : 0.900000, cable 2 : -0.900000, cable 3 : 0.000000
+[126/8/20: 17:44:1][Pos]x: 0.900000, y: 0.900000, z: -0.900000, yaw: 0.000000, pitch: -0.020000, roll: -0.023700, cable 0 : 0.900000, cable 1 : 0.900000, cable 2 : -0.900000, cable 3 : 0.000000
+[126/8/20: 17:44:34][Pos]x: 0.900000, y: 0.900000, z: -0.900000, yaw: 0.010000, pitch: 0.000000, roll: 0.000000, cable 0 : 0.900000, cable 1 : 0.900000, cable 2 : -0.900000, cable 3 : 0.010000
+[126/8/20: 17:44:41][Pos]x: 0.900000, y: 0.900000, z: -0.900000, yaw: 0.010000, pitch: 0.000000, roll: 0.000000, cable 0 : 0.900000, cable 1 : 0.900000, cable 2 : -0.900000, cable 3 : 0.010000
+[126/8/20: 17:44:49][Pos]x: 0.900000, y: 0.900000, z: -0.900000, yaw: 0.010000, pitch: 0.000000, roll: 0.000000, cable 0 : 0.900000, cable 1 : 0.900000, cable 2 : -0.900000, cable 3 : 0.010000
+[126/8/20: 17:46:55][Pos]x: 0.900000, y: 0.900000, z: -0.900000, yaw: 0.000000, pitch: 0.000000, roll: 0.000000, cable 0 : 0.900000, cable 1 : 0.900000, cable 2 : -0.900000, cable 3 : 0.000000
+[126/8/21: 17:52:39][Error]Robot disconnect incomplete; controller connection remains active.
+[126/8/22: 17:49:52][Error]Robot disconnect incomplete; controller connection remains active.
+[126/8/26: 15:8:16][Info]Reading robot config.
+[126/8/26: 15:8:25][Info]Connecting to robot.
+[126/8/26: 15:8:25][Info]All motors, all brakes and gripper connected success.
+[126/8/26: 15:8:25][Info]Reading Last Pos from pos log file
+[126/9/2: 12:18:48][Info]Reading robot config.
+[126/9/2: 12:18:48][Info]Connecting to robot.
+[126/9/2: 12:18:48][Error]Robot initialization failed.
+[126/9/2: 12:19:31][Info]Reading robot config.
+[126/9/2: 12:19:40][Info]Connecting to robot.
+[126/9/2: 12:19:40][Info]All motors, all brakes and gripper connected success.
+[126/9/2: 12:19:40][Info]Reading Last Pos from pos log file
+[126/9/7: 14:36:56][Info]Reading robot config.
+[126/9/7: 14:37:1][Info]Connecting to robot.
+[126/9/7: 14:37:1][Info]All motors, all brakes and gripper connected success.
+[126/9/7: 14:37:1][Info]Reading Last Pos from pos log file
+[126/9/7: 14:38:9][Info]Reading robot config.
+[126/9/7: 14:38:14][Info]Connecting to robot.
+[126/9/7: 14:38:14][Info]All motors, all brakes and gripper connected success.
+[126/9/7: 14:38:14][Info]Reading Last Pos from pos log file
+[126/9/10: 14:42:52][Info]Reading robot config.
+[126/9/10: 14:42:53][Info]Connecting to robot.
+[126/9/10: 14:42:53][Error]Robot initialization failed.
+[126/9/10: 14:42:54][Info]Reading robot config.
+[126/9/10: 14:42:55][Info]Connecting to robot.
+[126/9/10: 14:42:55][Error]Robot initialization failed.
+[126/9/10: 14:43:31][Info]Reading robot config.
+[126/9/10: 14:43:32][Info]Connecting to robot.
+[126/9/10: 14:43:32][Error]Robot initialization failed.
+[126/9/10: 14:43:57][Info]Reading robot config.
+[126/9/10: 14:44:1][Info]Connecting to robot.
+[126/9/10: 14:44:1][Info]All motors, all brakes and gripper connected success.
+[126/9/10: 14:44:1][Info]Reading Last Pos from pos log file
+[126/9/10: 14:56:21][Info]Reading robot config.
+[126/9/10: 14:56:21][Info]Connecting to robot.
+[126/9/10: 14:56:21][Error]Robot initialization failed.
+[126/9/10: 14:56:23][Info]Reading robot config.
+[126/9/10: 14:56:23][Info]Connecting to robot.
+[126/9/10: 14:56:23][Error]Robot initialization failed.
+[126/9/10: 14:56:37][Info]Reading robot config.
+[126/9/10: 14:56:37][Info]Connecting to robot.
+[126/9/10: 14:56:37][Error]Robot initialization failed.
+[126/9/10: 14:56:38][Info]Reading robot config.
+[126/9/10: 14:56:38][Info]Connecting to robot.
+[126/9/10: 14:56:38][Error]Robot initialization failed.
+[126/9/10: 14:56:43][Info]Reading robot config.
+[126/9/10: 14:56:48][Info]Connecting to robot.
+[126/9/10: 14:56:48][Info]All motors, all brakes and gripper connected success.
+[126/9/10: 14:56:48][Info]Reading Last Pos from pos log file
+[126/9/10: 15:1:4][Error]Robot disconnect incomplete; controller connection remains active.
+[126/9/10: 15:1:8][Info]Reading robot config.
+[126/9/10: 15:1:8][Info]Connecting to robot.
+[126/9/10: 15:1:8][Error]Robot initialization failed.
+[126/9/10: 15:1:9][Info]Reading robot config.
+[126/9/10: 15:1:9][Info]Connecting to robot.
+[126/9/10: 15:1:9][Error]Robot initialization failed.
+[126/9/10: 15:1:10][Info]Reading robot config.
+[126/9/10: 15:1:15][Info]Connecting to robot.
+[126/9/10: 15:1:15][Info]All motors, all brakes and gripper connected success.
+[126/9/10: 15:1:15][Info]Reading Last Pos from pos log file
+[126/9/11: 16:18:29][Info]Reading robot config.
+[126/9/11: 16:18:33][Info]Connecting to robot.
+[126/9/11: 16:18:33][Info]All motors, all brakes and gripper connected success.
+[126/9/11: 16:18:34][Info]Reading Last Pos from pos log file
+[126/9/11: 16:25:50][Pos]x: 0.900000, y: 0.900000, z: -0.900000, yaw: 0.000000, pitch: 0.000000, roll: 0.000000, cable 0 : 0.900000, cable 1 : 0.900000, cable 2 : -0.900000, cable 3 : 0.000000
+[126/9/11: 16:34:54][Pos]x: 0.900000, y: 0.900000, z: -0.900000, yaw: 0.000000, pitch: 0.000000, roll: 0.000000, cable 0 : 0.900000, cable 1 : 0.900000, cable 2 : -0.900000, cable 3 : 0.000000
+[126/9/11: 16:35:11][Pos]x: 0.900000, y: 0.900000, z: -0.900000, yaw: 0.000000, pitch: 0.000000, roll: 0.010000, cable 0 : 0.900000, cable 1 : 0.900000, cable 2 : -0.900000, cable 3 : 0.000000
+[126/9/11: 16:36:38][Pos]x: 0.900000, y: 0.900000, z: -0.900000, yaw: 0.100000, pitch: 0.000000, roll: 0.000000, cable 0 : 0.900000, cable 1 : 0.900000, cable 2 : -0.900000, cable 3 : 0.100000
+[126/9/11: 16:36:42][Error]Robot connection lost; leaving the main menu.
+[126/9/11: 16:36:42][Error]Skipping recovery-file save because the robot is not fully connected.
+[126/9/11: 16:36:43][Info]Robot Disconnected.
+[126/9/11: 16:36:47][Info]Reading robot config.
+[126/9/11: 16:36:51][Info]Connecting to robot.
+[126/9/11: 16:36:51][Info]All motors, all brakes and gripper connected success.
+[126/9/11: 16:36:52][Info]Reading Last Pos from pos log file
+[126/9/11: 16:37:13][Error]Robot connection lost; leaving the main menu.
+[126/9/11: 16:37:13][Error]Skipping recovery-file save because the robot is not fully connected.
+[126/9/11: 16:37:13][Info]Robot Disconnected.
+[126/9/11: 16:37:15][Info]Reading robot config.
+[126/9/11: 16:37:20][Info]Connecting to robot.
+[126/9/11: 16:37:20][Info]All motors, all brakes and gripper connected success.
+[126/9/11: 16:37:20][Info]Reading Last Pos from pos log file
+[126/9/11: 16:37:24][Pos]x: 0.900000, y: 0.900000, z: -0.900000, yaw: -0.050000, pitch: 0.000000, roll: 0.000000, cable 0 : 0.900000, cable 1 : 0.900000, cable 2 : -0.900000, cable 3 : -0.050000
+[126/9/11: 16:37:46][Pos]x: 0.900000, y: 0.900000, z: -0.900000, yaw: 0.000000, pitch: -0.050000, roll: 0.000000, cable 0 : 0.900000, cable 1 : 0.900000, cable 2 : -0.900000, cable 3 : 0.000000
+[126/9/11: 16:38:2][Pos]x: 0.900000, y: 0.900000, z: -0.900000, yaw: 0.000000, pitch: 0.050000, roll: 0.000000, cable 0 : 0.900000, cable 1 : 0.900000, cable 2 : -0.900000, cable 3 : 0.000000
+[126/9/11: 16:38:20][Pos]x: 0.900000, y: 0.900000, z: -0.900000, yaw: 0.000000, pitch: 0.020000, roll: 0.000000, cable 0 : 0.900000, cable 1 : 0.900000, cable 2 : -0.900000, cable 3 : 0.000000
+[126/9/11: 16:38:41][Pos]x: 0.900000, y: 0.900000, z: -0.900000, yaw: 0.000000, pitch: 0.010000, roll: 0.000000, cable 0 : 0.900000, cable 1 : 0.900000, cable 2 : -0.900000, cable 3 : 0.000000
+[126/9/11: 16:39:6][Pos]x: 0.900000, y: 0.900000, z: -0.900000, yaw: 0.000000, pitch: 0.010000, roll: 0.000000, cable 0 : 0.900000, cable 1 : 0.900000, cable 2 : -0.900000, cable 3 : 0.000000
+[126/9/11: 16:39:23][Pos]x: 0.900000, y: 0.900000, z: -0.900000, yaw: 0.000000, pitch: 0.010000, roll: 0.000000, cable 0 : 0.900000, cable 1 : 0.900000, cable 2 : -0.900000, cable 3 : 0.000000
+[126/9/11: 16:39:37][Pos]x: 0.900000, y: 0.900000, z: -0.900000, yaw: 0.000000, pitch: 0.010000, roll: 0.000000, cable 0 : 0.900000, cable 1 : 0.900000, cable 2 : -0.900000, cable 3 : 0.000000
+[126/9/11: 16:39:52][Pos]x: 0.900000, y: 0.900000, z: -0.900000, yaw: 0.000000, pitch: -0.010000, roll: 0.000000, cable 0 : 0.900000, cable 1 : 0.900000, cable 2 : -0.900000, cable 3 : 0.000000
+[126/9/11: 16:40:32][Pos]x: 0.900000, y: 0.900000, z: -0.900000, yaw: 0.000000, pitch: 0.000000, roll: 0.020000, cable 0 : 0.900000, cable 1 : 0.900000, cable 2 : -0.900000, cable 3 : 0.000000
+[126/9/11: 16:40:40][Pos]x: 0.900000, y: 0.900000, z: -0.900000, yaw: 0.000000, pitch: 0.000000, roll: 0.020000, cable 0 : 0.900000, cable 1 : 0.900000, cable 2 : -0.900000, cable 3 : 0.000000
+[126/9/11: 16:40:47][Pos]x: 0.900000, y: 0.900000, z: -0.900000, yaw: 0.000000, pitch: 0.000000, roll: 0.020000, cable 0 : 0.900000, cable 1 : 0.900000, cable 2 : -0.900000, cable 3 : 0.000000
+[126/9/11: 16:40:57][Pos]x: 0.900000, y: 0.900000, z: -0.900000, yaw: 0.000000, pitch: 0.000000, roll: 0.020000, cable 0 : 0.900000, cable 1 : 0.900000, cable 2 : -0.900000, cable 3 : 0.000000
+[126/9/11: 16:41:12][Pos]x: 0.900000, y: 0.900000, z: -0.900000, yaw: 0.000000, pitch: 0.000000, roll: 0.000000, cable 0 : 0.900000, cable 1 : 0.900000, cable 2 : -0.900000, cable 3 : 0.000000
+[126/9/23: 16:59:31][Info]Reading robot config.
+[126/9/23: 16:59:40][Info]Connecting to robot.
+[126/9/23: 16:59:40][Info]All motors, all brakes and gripper connected success.
+[126/9/23: 16:59:40][Info]Reading Last Pos from pos log file
+[126/9/23: 17:2:4][Info]Robot Disconnected.
+[126/10/8: 16:13:7][Info]Reading robot config.
+[126/10/8: 16:13:16][Info]Connecting to robot.
+[126/10/8: 16:13:16][Info]All motors, all brakes and gripper connected success.
+[126/10/8: 16:13:16][Info]Reading Last Pos from pos log file
+[126/10/8: 16:14:11][Pos]x: 0.900000, y: 0.900000, z: -0.900000, yaw: -0.050000, pitch: 0.000000, roll: 0.000000, cable 0 : 0.900000, cable 1 : 0.900000, cable 2 : -0.900000, cable 3 : -0.050000
+[126/10/8: 16:15:13][Error]Robot connection lost; leaving the main menu.
+[126/10/8: 16:15:13][Error]Skipping recovery-file save because the robot is not fully connected.
+[126/10/8: 16:15:13][Info]Robot Disconnected.
+[126/10/8: 16:15:15][Info]Reading robot config.
+[126/10/8: 16:15:20][Info]Connecting to robot.
+[126/10/8: 16:15:20][Info]All motors, all brakes and gripper connected success.
+[126/10/8: 16:15:20][Info]Reading Last Pos from pos log file
+[126/10/8: 16:15:27][Pos]x: 0.900000, y: 0.900000, z: -0.900000, yaw: 0.000000, pitch: 0.050000, roll: 0.000000, cable 0 : 0.900000, cable 1 : 0.900000, cable 2 : -0.900000, cable 3 : 0.000000
+[126/10/8: 16:15:36][Error]Robot connection lost; leaving the main menu.
+[126/10/8: 16:15:36][Error]Skipping recovery-file save because the robot is not fully connected.
+[126/10/8: 16:15:37][Info]Robot Disconnected.
+[126/10/8: 16:15:38][Info]Reading robot config.
+[126/10/8: 16:15:43][Info]Connecting to robot.
+[126/10/8: 16:15:43][Info]All motors, all brakes and gripper connected success.
+[126/10/8: 16:15:43][Info]Reading Last Pos from pos log file
+[126/10/8: 16:15:53][Pos]x: 0.900000, y: 0.900000, z: -0.900000, yaw: 0.000000, pitch: -0.050000, roll: 0.000000, cable 0 : 0.900000, cable 1 : 0.900000, cable 2 : -0.900000, cable 3 : 0.000000
+[126/10/8: 16:16:4][Pos]x: 0.900000, y: 0.900000, z: -0.900000, yaw: 0.000000, pitch: -0.050000, roll: 0.000000, cable 0 : 0.900000, cable 1 : 0.900000, cable 2 : -0.900000, cable 3 : 0.000000
+[126/10/8: 16:16:11][Pos]x: 0.900000, y: 0.900000, z: -0.900000, yaw: 0.000000, pitch: -0.050000, roll: 0.000000, cable 0 : 0.900000, cable 1 : 0.900000, cable 2 : -0.900000, cable 3 : 0.000000
+[126/10/8: 16:18:53][Info]Reading robot config.
+[126/10/8: 16:18:54][Info]Connecting to robot.
+[126/10/8: 16:18:54][Error]Robot initialization failed.
+[126/10/8: 16:19:0][Info]Reading robot config.
+[126/10/8: 16:19:8][Info]Connecting to robot.
+[126/10/8: 16:19:8][Info]All motors, all brakes and gripper connected success.
+[126/10/8: 16:19:8][Info]Reading Last Pos from pos log file
+[126/10/8: 16:32:37][Error]Robot connection lost; leaving the main menu.
+[126/10/8: 16:32:37][Error]Skipping recovery-file save because the robot is not fully connected.
+[126/10/8: 16:32:38][Info]Robot Disconnected.
+[126/10/8: 16:32:45][Info]Reading robot config.
+[126/10/8: 16:32:50][Info]Connecting to robot.
+[126/10/8: 16:32:50][Info]All motors, all brakes and gripper connected success.
+[126/10/8: 16:32:50][Info]Reading Last Pos from pos log file
+[126/10/8: 17:1:30][Info]Reading robot config.
+[126/10/8: 17:1:35][Info]Connecting to robot.
+[126/10/8: 17:1:35][Info]All motors, all brakes and gripper connected success.
+[126/10/8: 17:1:35][Info]Reading Last Pos from pos log file
+[126/10/8: 17:2:55][Info]Reading robot config.
+[126/10/8: 17:2:55][Info]Connecting to robot.
+[126/10/8: 17:2:55][Error]Robot initialization failed.
+[126/10/8: 17:2:58][Info]Reading robot config.
+[126/10/8: 17:2:59][Info]Connecting to robot.
+[126/10/8: 17:2:59][Error]Robot initialization failed.
+[126/10/8: 17:3:1][Info]Reading robot config.
+[126/10/8: 17:3:1][Info]Connecting to robot.
+[126/10/8: 17:3:1][Error]Robot initialization failed.
+[126/10/8: 17:3:9][Info]Reading robot config.
+[126/10/8: 17:3:17][Info]Connecting to robot.
+[126/10/8: 17:3:17][Info]All motors, all brakes and gripper connected success.
+[126/10/8: 17:3:17][Info]Reading Last Pos from pos log file
+[126/10/8: 17:3:35][Pos]x: 0.900000, y: 0.900000, z: -0.900000, yaw: -0.050000, pitch: 0.000000, roll: 0.000000, cable 0 : 0.900000, cable 1 : 0.900000, cable 2 : -0.900000, cable 3 : -0.050000
+[126/10/8: 17:3:44][Pos]x: 0.900000, y: 0.900000, z: -0.900000, yaw: -0.050000, pitch: 0.000000, roll: 0.000000, cable 0 : 0.900000, cable 1 : 0.900000, cable 2 : -0.900000, cable 3 : -0.050000
+[126/10/8: 17:3:53][Pos]x: 0.900000, y: 0.900000, z: -0.900000, yaw: -0.050000, pitch: 0.000000, roll: 0.000000, cable 0 : 0.900000, cable 1 : 0.900000, cable 2 : -0.900000, cable 3 : -0.050000
+[126/10/8: 17:4:27][Pos]x: 0.900000, y: 0.900000, z: -0.900000, yaw: -0.050000, pitch: 0.000000, roll: 0.000000, cable 0 : 0.900000, cable 1 : 0.900000, cable 2 : -0.900000, cable 3 : -0.050000
+[126/10/8: 17:56:35][Pos]x: 0.900000, y: 0.900000, z: -0.900000, yaw: 0.050000, pitch: 0.000000, roll: 0.000000, cable 0 : 0.900000, cable 1 : 0.900000, cable 2 : -0.900000, cable 3 : 0.050000
+[126/10/8: 17:56:48][Pos]x: 0.900000, y: 0.900000, z: -0.900000, yaw: 0.050000, pitch: 0.000000, roll: 0.000000, cable 0 : 0.900000, cable 1 : 0.900000, cable 2 : -0.900000, cable 3 : 0.050000
+[126/10/8: 17:56:56][Pos]x: 0.900000, y: 0.900000, z: -0.900000, yaw: 0.050000, pitch: 0.000000, roll: 0.000000, cable 0 : 0.900000, cable 1 : 0.900000, cable 2 : -0.900000, cable 3 : 0.050000
+[126/10/8: 17:57:9][Pos]x: 0.900000, y: 0.900000, z: -0.900000, yaw: 0.050000, pitch: 0.000000, roll: 0.000000, cable 0 : 0.900000, cable 1 : 0.900000, cable 2 : -0.900000, cable 3 : 0.050000
+[126/10/9: 11:29:49][Info]Reading robot config.
+[126/10/9: 11:29:58][Info]Connecting to robot.
+[126/10/9: 11:29:58][Info]All motors, all brakes and gripper connected success.
+[126/10/9: 11:29:58][Info]Reading Last Pos from pos log file
+[126/10/9: 11:30:40][Pos]x: 0.900000, y: 0.900000, z: -0.900000, yaw: 0.000000, pitch: -0.050000, roll: 0.000000, cable 0 : 0.900000, cable 1 : 0.900000, cable 2 : -0.900000, cable 3 : 0.000000
+[126/10/9: 11:30:47][Pos]x: 0.900000, y: 0.900000, z: -0.900000, yaw: 0.000000, pitch: -0.050000, roll: 0.000000, cable 0 : 0.900000, cable 1 : 0.900000, cable 2 : -0.900000, cable 3 : 0.000000
+[126/10/9: 11:31:10][Pos]x: 0.900000, y: 0.900000, z: -0.900000, yaw: 0.050000, pitch: 0.000000, roll: 0.000000, cable 0 : 0.900000, cable 1 : 0.900000, cable 2 : -0.900000, cable 3 : 0.050000
+[126/10/9: 11:31:24][Pos]x: 0.900000, y: 0.900000, z: -0.900000, yaw: -0.100000, pitch: 0.000000, roll: 0.000000, cable 0 : 0.900000, cable 1 : 0.900000, cable 2 : -0.900000, cable 3 : -0.100000
+[126/10/9: 11:31:31][Pos]x: 0.900000, y: 0.900000, z: -0.900000, yaw: -0.100000, pitch: 0.000000, roll: 0.000000, cable 0 : 0.900000, cable 1 : 0.900000, cable 2 : -0.900000, cable 3 : -0.100000
+[126/10/9: 11:31:40][Pos]x: 0.900000, y: 0.900000, z: -0.900000, yaw: -0.100000, pitch: 0.000000, roll: 0.000000, cable 0 : 0.900000, cable 1 : 0.900000, cable 2 : -0.900000, cable 3 : -0.100000
+[126/10/9: 11:31:58][Pos]x: 0.900000, y: 0.900000, z: -0.900000, yaw: 0.000000, pitch: -0.050000, roll: 0.000000, cable 0 : 0.900000, cable 1 : 0.900000, cable 2 : -0.900000, cable 3 : 0.000000
+[126/10/9: 11:32:4][Pos]x: 0.900000, y: 0.900000, z: -0.900000, yaw: 0.000000, pitch: -0.050000, roll: 0.000000, cable 0 : 0.900000, cable 1 : 0.900000, cable 2 : -0.900000, cable 3 : 0.000000
+[126/10/9: 11:33:3][Pos]x: 0.900000, y: 0.900000, z: -0.900000, yaw: 0.000000, pitch: -0.050000, roll: 0.000000, cable 0 : 0.900000, cable 1 : 0.900000, cable 2 : -0.900000, cable 3 : 0.000000
+[126/10/9: 11:33:10][Pos]x: 0.900000, y: 0.900000, z: -0.900000, yaw: 0.000000, pitch: -0.050000, roll: 0.000000, cable 0 : 0.900000, cable 1 : 0.900000, cable 2 : -0.900000, cable 3 : 0.000000
+[126/10/9: 11:33:16][Pos]x: 0.900000, y: 0.900000, z: -0.900000, yaw: 0.000000, pitch: -0.050000, roll: 0.000000, cable 0 : 0.900000, cable 1 : 0.900000, cable 2 : -0.900000, cable 3 : 0.000000
+[126/10/9: 11:33:22][Pos]x: 0.900000, y: 0.900000, z: -0.900000, yaw: 0.000000, pitch: -0.050000, roll: 0.000000, cable 0 : 0.900000, cable 1 : 0.900000, cable 2 : -0.900000, cable 3 : 0.000000
+[126/10/13: 14:46:59][Info]Reading robot config.
+[126/10/13: 14:47:8][Info]Connecting to robot.
+[126/10/13: 14:47:8][Info]All motors, all brakes and gripper connected success.
+[126/10/13: 14:47:8][Info]Reading Last Pos from pos log file
+[126/10/13: 14:47:51][Pos]x: 0.900000, y: 0.900000, z: -0.900000, yaw: 0.000000, pitch: -0.050000, roll: 0.000000, cable 0 : 0.900000, cable 1 : 0.900000, cable 2 : -0.900000, cable 3 : 0.000000
+[126/10/13: 14:48:14][Pos]x: 0.900000, y: 0.900000, z: -0.900000, yaw: 0.000000, pitch: 0.050000, roll: 0.000000, cable 0 : 0.900000, cable 1 : 0.900000, cable 2 : -0.900000, cable 3 : 0.000000
+[126/10/13: 14:48:22][Pos]x: 0.900000, y: 0.900000, z: -0.900000, yaw: 0.000000, pitch: 0.050000, roll: 0.000000, cable 0 : 0.900000, cable 1 : 0.900000, cable 2 : -0.900000, cable 3 : 0.000000
+[126/10/13: 14:48:42][Error]Robot connection lost; leaving the main menu.
+[126/10/13: 14:48:42][Error]Skipping recovery-file save because the robot is not fully connected.
+[126/10/13: 14:48:42][Info]Robot Disconnected.
+[126/10/13: 14:48:44][Info]Reading robot config.
+[126/10/13: 14:48:49][Info]Connecting to robot.
+[126/10/13: 14:48:49][Info]All motors, all brakes and gripper connected success.
+[126/10/13: 14:48:49][Info]Reading Last Pos from pos log file
+[126/10/13: 14:48:54][Pos]x: 0.900000, y: 0.900000, z: -0.900000, yaw: 0.000000, pitch: 0.050000, roll: 0.000000, cable 0 : 0.900000, cable 1 : 0.900000, cable 2 : -0.900000, cable 3 : 0.000000
+[126/10/13: 14:49:11][Pos]x: 0.900000, y: 0.900000, z: -0.900000, yaw: 0.000000, pitch: 0.050000, roll: 0.000000, cable 0 : 0.900000, cable 1 : 0.900000, cable 2 : -0.900000, cable 3 : 0.000000
+[126/10/16: 15:58:26][Info]Reading robot config.
+[126/10/16: 15:58:36][Info]Connecting to robot.
+[126/10/16: 15:58:36][Info]All motors, all brakes and gripper connected success.
+[126/10/16: 15:58:36][Info]Reading Last Pos from pos log file
